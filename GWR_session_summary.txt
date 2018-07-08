@@ -1,0 +1,59 @@
+================================================================================
+Model type                                                              Gaussian
+Number of observations:                                                       99
+Number of missing rows:                                                        0
+Number of covariates:                                                          6
+Dependent variable:                                                z_new_pct_dem
+Total runtime:                                                           0:00:00
+
+Global Regression Results
+--------------------------------------------------------------------------------
+Residual sum of squares:                                                  63.667
+Log-likelihood:                                                         -118.623
+AIC:                                                                     249.245
+AICc:                                                                    252.476
+BIC:                                                                    -363.680
+R2:                                                                        0.518
+Adj. R2:                                                                   0.492
+
+Variable                                   Est.         SE  t(Est/SE)    p-value
+------------------------------------ ---------- ---------- ---------- ----------
+Intercept                                -0.284      0.115     -2.458      0.014
+z_pct_bachelor_higher                     0.612      0.181      3.387      0.001
+z_gini                                    0.541      0.110      4.899      0.000
+z_pct_manuf                              -0.276      0.109     -2.528      0.011
+z_log_pop_den                            -0.663      0.166     -3.997      0.000
+z_log_3rd_party                          -0.284      0.098     -2.879      0.004
+
+Geographically Weighted Regression (GWR) Results
+--------------------------------------------------------------------------------
+Coordinates type:                                                      Projected
+Spatial kernel:                                                Adaptive bisquare
+Bandwidth used:                                                           73.000
+
+Diagnostic Information
+--------------------------------------------------------------------------------
+Residual sum of squares:                                                  42.772
+Effective number of parameters (trace(S)):                                15.727
+Degree of freedom (n - trace(S)):                                         83.273
+Sigma estimate:                                                            0.717
+Log-likelihood:                                                          -98.932
+AIC:                                                                     231.319
+AICc:                                                                    238.617
+BIC:                                                                     274.729
+R2:                                                                        0.676
+Adj. alpha (95%):                                                          0.019
+Adj. critical t value (95%):                                               2.384
+
+Summary Statistics For GWR Parameter Estimates
+--------------------------------------------------------------------------------
+Variable                        Mean        STD        Min     Median        Max
+--------------------      ---------- ---------- ---------- ---------- ----------
+Intercept                     -1.238      0.707     -1.918     -1.596      0.058
+z_pct_bachelor_higher          0.795      0.265      0.173      0.928      0.971
+z_gini                         0.478      0.125      0.342      0.420      0.713
+z_pct_manuf                   -0.014      0.176     -0.435      0.059      0.147
+z_log_pop_den                 -0.048      0.296     -0.750      0.039      0.237
+z_log_3rd_party               -0.750      0.475     -1.216     -0.990      0.094
+================================================================================
+
