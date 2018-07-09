@@ -6,26 +6,34 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-import sys
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QApplication,QSplashScreen,QProgressBar,QDialog
+import sys,os
 import time
 from src.gui import Ui_Dialog
+
+
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 
 if __name__ == "__main__":
     import sys, time
     
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     app.setStyle('mac')
     
     
     # Create and display the splash screen
-    splash_pix = QtGui.QPixmap('./img/Group.png')
+    splash_pix = QPixmap(resource_path('img/Group.png'))
     #splash_pix = img.scaled(QtCore.QSize(634/2,468/2),QtCore.Qt.KeepAspectRatio)
     
-    splash = QtWidgets.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
+    splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
     # adding progress bar
-    progressBar = QtWidgets.QProgressBar(splash)
+    progressBar = QProgressBar(splash)
     progressBar.setGeometry(splash.width()/10, 8.8*splash.height()/10,
                             9*splash.width()/10, splash.height()/10)
     splash.setMask(splash_pix.mask())
@@ -38,8 +46,8 @@ if __name__ == "__main__":
             app.processEvents()
 
     #Initiate Main Dialog
-    Dialog = QtWidgets.QDialog()
-    Dialog.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowCloseButtonHint)
+    Dialog = QDialog()
+    Dialog.setWindowFlags(Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
     ui = Ui_Dialog()
     ui.setupUi(Dialog)
     Dialog.setFixedSize(Dialog.size())

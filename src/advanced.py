@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'advanced.ui'
-#
-# Created by: PyQt5 UI code generator 5.9
-#
-# WARNING! All changes made in this file will be lost!
+# -*- coding: utf-8 -*-
+#_Author: Ziqi Li (liziqi1992@gmail.com)
+#Generated using pyuic5 -x advOptMGWR.ui -o advOptMGWR.py
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
+
 class Ui_advDialog(object):
     def setupUi(self, advDialog):
         advDialog.setObjectName("advDialog")
@@ -17,7 +17,7 @@ class Ui_advDialog(object):
         self.SOCBox.setGeometry(QtCore.QRect(10, 110, 221, 51))
         self.SOCBox.setObjectName("SOCBox")
         self.SOCComboBox = QtWidgets.QComboBox(self.SOCBox)
-        self.SOCComboBox.setGeometry(QtCore.QRect(10, 20, 201, 26))
+        self.SOCComboBox.setGeometry(QtCore.QRect(10, 20, 201, 21))
         self.SOCComboBox.setObjectName("SOCComboBox")
         self.SOCComboBox.addItem("")
         self.SOCComboBox.addItem("")
@@ -25,7 +25,7 @@ class Ui_advDialog(object):
         self.groupBox_2.setGeometry(QtCore.QRect(10, 60, 221, 51))
         self.groupBox_2.setObjectName("groupBox_2")
         self.initComboBox = QtWidgets.QComboBox(self.groupBox_2)
-        self.initComboBox.setGeometry(QtCore.QRect(10, 20, 201, 26))
+        self.initComboBox.setGeometry(QtCore.QRect(10, 20, 201, 21))
         self.initComboBox.setObjectName("initComboBox")
         self.initComboBox.addItem("")
         self.initComboBox.addItem("")
@@ -40,7 +40,7 @@ class Ui_advDialog(object):
         self.groupBox_3.setGeometry(QtCore.QRect(10, 160, 221, 51))
         self.groupBox_3.setObjectName("groupBox_3")
         self.convComboBox = QtWidgets.QComboBox(self.groupBox_3)
-        self.convComboBox.setGeometry(QtCore.QRect(10, 20, 201, 26))
+        self.convComboBox.setGeometry(QtCore.QRect(10, 20, 201, 21))
         self.convComboBox.setObjectName("convComboBox")
         self.convComboBox.addItem("")
         self.convComboBox.addItem("")
@@ -48,21 +48,21 @@ class Ui_advDialog(object):
         self.SOCBox_2.setGeometry(QtCore.QRect(10, 10, 221, 51))
         self.SOCBox_2.setObjectName("SOCBox_2")
         self.varSTDComboBox = QtWidgets.QComboBox(self.SOCBox_2)
-        self.varSTDComboBox.setGeometry(QtCore.QRect(10, 20, 201, 26))
+        self.varSTDComboBox.setGeometry(QtCore.QRect(10, 20, 201, 21))
         self.varSTDComboBox.setObjectName("varSTDComboBox")
         self.varSTDComboBox.addItem("")
         self.varSTDComboBox.addItem("")
-        
-        
+		
+		
         self.advDialog = advDialog
         self.varSTD = "On"
         self.soc = "SOC-f"
         self.init = "GWR estimates"
         self.converg = "1e-5"
-        
+
         self.retranslateUi(advDialog)
         QtCore.QMetaObject.connectSlotsByName(advDialog)
-    
+
     def retranslateUi(self, advDialog):
         _translate = QtCore.QCoreApplication.translate
         advDialog.setWindowTitle(_translate("advDialog", "Advanced Options"))
