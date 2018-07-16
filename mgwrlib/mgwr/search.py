@@ -192,6 +192,7 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
         def tqdm(x): #otherwise, just passthrough the range
             return x
     for iters in tqdm(range(1, max_iter+1)):
+        print(iters)
         new_XB = np.zeros_like(X)
         bws = []
         vals = []

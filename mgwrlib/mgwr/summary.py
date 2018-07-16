@@ -11,7 +11,7 @@ def summaryModel(self,diag):
     summary += "%-65s %14d\n" % ('Number of missing rows:', diag.nMiss)
     summary += "%-65s %14d\n" % ('Number of covariates:', self.k)
     summary += "%-65s %14s\n" % ('Dependent variable:', diag.yName)
-    if (diag.offset):
+    if (diag.offset is not None):
         summary += "%-65s %14s\n" % ('Offset variable:', diag.OffsetLabel.text())
     if diag.isMGWR and diag.varSTD:
         summary += "%-65s %14s\n" % ('Variable standardization:', 'On')
@@ -94,6 +94,13 @@ def summaryGWR(self,diag):
     summary += "%-67s %12.3f\n" % ('Adj. alpha (95%):', self.adj_alpha[1])
     summary += "%-67s %12.3f\n" % ('Adj. critical t value (95%):', self.critical_tval(self.adj_alpha[1]))
 
+    if diag.mcTest != "Off":
+        summary += "\n%s\n" %('Monte Carlo Test for Spatial Variability')
+        summary += '-' * 80 + '\n'
+        summary += "%-67s %12s\n" % ('Variable', 'p-value')
+        for j in range(self.k):
+            summary += "%-67s %12.3f\n" % (diag.XNames[j], diag.testMCResults[j])
+
     summary += "\n%s\n" % ('Summary Statistics For GWR Parameter Estimates')
     summary += '-' * 80 + '\n'
     summary += "%-25s %10s %10s %10s %10s %10s\n" % ('Variable', 'Mean' ,'STD', 'Min' ,'Median', 'Max')
@@ -134,13 +141,21 @@ def summaryMGWR(self,diag):
 
     summary += "%-59s %20s\n" % ('Termination criterion for MGWR:', '{:.1e}'.format(self.model.selector.tol_multi))
 
-    summary += "%-59s %20d\n\n" % ('Number of iterations used:', diag.bw.bw[1].shape[0])
+    summary += "%-59s %20d\n\n" % ('Number of iterations used:', diag.selector.bw[1].shape[0])
 
     summary += "%s\n" %('MGWR bandwidths')
     summary += '-' * 80 + '\n'
     summary += "%-20s %14s %10s %16s %16s\n" % ('Variable', 'Bandwidth', 'ENP_j','Adj t-val(95%)','Adj alpha(95%)')
     for j in range(self.k):
         summary += "%-20s %14.3f %10.3f %16.3f %16.3f\n" % (diag.XNames[j], self.model.bw[j], self.ENP_j[j],self.critical_tval()[j],self.adj_alpha_j[j,1])
+    
+    if diag.mcTest != "Off":
+        summary += "\n%s\n" %('Monte Carlo Test for Spatial Variability')
+        summary += '-' * 80 + '\n'
+        summary += "%-67s %12s\n" % ('Variable', 'p-value')
+        for j in range(self.k):
+            summary += "%-67s %12.3f\n" % (diag.XNames[j], diag.testMCResults[j])
+    
 
     summary += "\n%s\n" % ('Diagnostic Information')
     summary += '-' * 80 + '\n'

@@ -41,17 +41,28 @@ def saveProcessToCSVMGWR(self):
     processDF.to_csv(self.betaFileSavePath.text()[:-10]+'_process.csv',sep=',',index=True)
 
 def saveBetasToCSVMGWR(self):
-    resultsDF = pd.DataFrame(np.column_stack((self.id,self.xCoor,self.yCoor,self.y,self.results.predy,self.results.resid_response,self.results.params)))
-    resultsDF.columns = ['GeoID','x_coor','y_coor','y','yhat','residual'] + ['beta_'+ x for x in self.XNames]
+    resultsDF = pd.DataFrame(np.column_stack((self.id,self.xCoor,self.yCoor,self.y,self.results.predy,self.results.resid_response,self.results.params,self.results.bse,self.results.tvalues)))
+    resultsDF.columns = ['GeoID','x_coor','y_coor','y','yhat','residual'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
+    
+    if self.locollinear != "Off":
+        resultsDF = pd.concat([pd.DataFrame,pd.DataFrame(np.column_stack(self.locollinearResults[-2],self.locollinearResults[-1]))])
+        resultsDF.columns += ['local_CN'] + ['local_vdp_'+ x for x in self.XNames]
+    
     resultsDF.to_csv(self.betaFileSavePath.text(),sep=',',index=False)
 
 def saveBetasToCSVGWR(self):
-    if self.family == "Gaussian":
-        resultsDF = pd.DataFrame(np.column_stack((self.id,self.xCoor,self.yCoor,self.y,self.results.predy,self.results.resid_response,self.results.localR2,self.results.influ,self.results.cooksD,self.results.params,self.results.bse,seflf.results.tvalues)))
+    if isinstance(self.family, Gaussian):
+        resultsDF = pd.DataFrame(np.column_stack((self.id,self.xCoor,self.yCoor,self.y,self.results.predy,self.results.resid_response,self.results.localR2,self.results.influ,self.results.cooksD,self.results.params,self.results.bse,self.results.tvalues)))
         resultsDF.columns = ['GeoID','x_coor','y_coor','y','yhat','residual','localR2','influ','CooksD'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
     else:
-        resultsDF = pd.DataFrame(np.column_stack((self.id,self.xCoor,self.yCoor,self.y,self.results.predy,self.results.resid_response, self.results.influ,self.results.cooksD,self.results.params,self.results.bse,self.results.tvalues)))
-        resultsDF.columns = ['GeoID','x_coor','y_coor','y','yhat','residual','influ','CooksD'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
+        resultsDF = pd.DataFrame(np.column_stack((self.id,self.xCoor,self.yCoor,self.y,self.results.predy,self.results.resid_response,self.results.pDev,self.results.influ,self.results.cooksD,self.results.params,self.results.bse,self.results.tvalues)))
+        resultsDF.columns = ['GeoID','x_coor','y_coor','y','yhat','residual','pDev','influ','CooksD'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
+
+    if self.locollinear != "Off":
+        resultsDF = pd.concat([pd.DataFrame,pd.DataFrame(np.column_stack(self.locollinearResults[-2],self.locollinearResults[-1]))])
+        resultsDF.columns += ['local_CN'] + ['local_vdp_'+ x for x in self.XNames]
+
+
     resultsDF.to_csv(self.betaFileSavePath.text(),sep=',',index=False)
 
 

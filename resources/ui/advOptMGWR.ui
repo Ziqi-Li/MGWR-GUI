@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>369</width>
-    <height>218</height>
+    <width>480</width>
+    <height>216</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,8 +22,8 @@
   <widget class="QGroupBox" name="SOCBox">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>110</y>
+     <x>250</x>
+     <y>10</y>
      <width>221</width>
      <height>51</height>
     </rect>
@@ -83,21 +83,19 @@
       <string>OLS estimates</string>
      </property>
     </item>
-    <item>
-     <property name="text">
-      <string>None</string>
-     </property>
-    </item>
    </widget>
   </widget>
   <widget class="QPushButton" name="applyBTN">
    <property name="geometry">
     <rect>
-     <x>250</x>
-     <y>20</y>
-     <width>110</width>
+     <x>130</x>
+     <y>170</y>
+     <width>101</width>
      <height>32</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
    </property>
    <property name="text">
     <string>Apply</string>
@@ -106,11 +104,14 @@
   <widget class="QPushButton" name="cancelBTN">
    <property name="geometry">
     <rect>
-     <x>250</x>
-     <y>60</y>
-     <width>110</width>
+     <x>249</x>
+     <y>170</y>
+     <width>101</width>
      <height>32</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
    </property>
    <property name="text">
     <string>Cancel</string>
@@ -119,8 +120,8 @@
   <widget class="QGroupBox" name="groupBox_3">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>160</y>
+     <x>250</x>
+     <y>60</y>
      <width>221</width>
      <height>51</height>
     </rect>
@@ -178,6 +179,72 @@
     <item>
      <property name="text">
       <string>Off</string>
+     </property>
+    </item>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_4">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>110</y>
+     <width>221</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Monte Carlo test for spatial variability</string>
+   </property>
+   <widget class="QComboBox" name="mcComboBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>201</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Off</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>On (Very Slow)</string>
+     </property>
+    </item>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_5">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>110</y>
+     <width>221</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Local collinearity diagnostics</string>
+   </property>
+   <widget class="QComboBox" name="locollinearComboBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>201</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Off</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>On</string>
      </property>
     </item>
    </widget>

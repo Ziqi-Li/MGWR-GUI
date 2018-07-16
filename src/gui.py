@@ -15,7 +15,8 @@ from mgwrlib.spglm.glm import GLM
 from mgwrlib.spglm.family import Gaussian, Binomial, Poisson
 from .outputs import *
 from .loader import Ui_runningDialog
-from .advanced import Ui_advDialog
+from .advancedMGWR import Ui_advMGWRDialog
+from .advancedGWR import Ui_advGWRDialog
 from .summaryGUI import Ui_summaryDlg
 #from .map import *
 from time import sleep
@@ -23,7 +24,7 @@ from time import sleep
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(764, 618)
+        Dialog.resize(761, 563)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -31,16 +32,13 @@ class Ui_Dialog(object):
         Dialog.setSizePolicy(sizePolicy)
         Dialog.setMaximumSize(QtCore.QSize(764, 618))
         Dialog.setSizeIncrement(QtCore.QSize(0, 0))
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../img/MGWR-pc.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        Dialog.setWindowIcon(icon)
         Dialog.setLayoutDirection(QtCore.Qt.LeftToRight)
         Dialog.setAutoFillBackground(False)
         self.groupBox_2 = QtWidgets.QGroupBox(Dialog)
-        self.groupBox_2.setGeometry(QtCore.QRect(289, 0, 191, 381))
+        self.groupBox_2.setGeometry(QtCore.QRect(289, 0, 191, 391))
         self.groupBox_2.setObjectName("groupBox_2")
         self.variableList = QtWidgets.QListWidget(self.groupBox_2)
-        self.variableList.setGeometry(QtCore.QRect(10, 20, 171, 351))
+        self.variableList.setGeometry(QtCore.QRect(10, 20, 171, 361))
         self.variableList.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.variableList.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.variableList.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
@@ -50,7 +48,7 @@ class Ui_Dialog(object):
         self.variableList.setResizeMode(QtWidgets.QListView.Fixed)
         self.variableList.setObjectName("variableList")
         self.groupBox_6 = QtWidgets.QGroupBox(Dialog)
-        self.groupBox_6.setGeometry(QtCore.QRect(490, 0, 261, 381))
+        self.groupBox_6.setGeometry(QtCore.QRect(490, 0, 261, 391))
         self.groupBox_6.setObjectName("groupBox_6")
         self.gridLayoutWidget = QtWidgets.QWidget(self.groupBox_6)
         self.gridLayoutWidget.setGeometry(QtCore.QRect(10, 20, 241, 61))
@@ -87,10 +85,10 @@ class Ui_Dialog(object):
         self.removeOffset.setObjectName("removeOffset")
         self.gridLayout.addWidget(self.removeOffset, 1, 0, 1, 1)
         self.groupBox_3 = QtWidgets.QGroupBox(self.groupBox_6)
-        self.groupBox_3.setGeometry(QtCore.QRect(68, 80, 181, 296))
+        self.groupBox_3.setGeometry(QtCore.QRect(68, 85, 181, 296))
         self.groupBox_3.setObjectName("groupBox_3")
         self.localList = QtWidgets.QListWidget(self.groupBox_3)
-        self.localList.setGeometry(QtCore.QRect(10, 20, 161, 271))
+        self.localList.setGeometry(QtCore.QRect(10, 20, 161, 266))
         self.localList.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.localList.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.localList.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
@@ -108,7 +106,7 @@ class Ui_Dialog(object):
         self.addLocal.setObjectName("addLocal")
         self.horizontalLayout_5.addWidget(self.addLocal)
         self.groupBox_7 = QtWidgets.QGroupBox(Dialog)
-        self.groupBox_7.setGeometry(QtCore.QRect(10, 205, 271, 41))
+        self.groupBox_7.setGeometry(QtCore.QRect(10, 205, 271, 46))
         self.groupBox_7.setObjectName("groupBox_7")
         self.horizontalLayoutWidget_2 = QtWidgets.QWidget(self.groupBox_7)
         self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(10, 20, 256, 19))
@@ -116,18 +114,18 @@ class Ui_Dialog(object):
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_2)
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.isMGWRRBTN = QtWidgets.QRadioButton(self.horizontalLayoutWidget_2)
+        self.isMGWRRBTN.setChecked(True)
+        self.isMGWRRBTN.setObjectName("isMGWRRBTN")
+        self.horizontalLayout_2.addWidget(self.isMGWRRBTN)
         self.isGWRRBTN = QtWidgets.QRadioButton(self.horizontalLayoutWidget_2)
         self.isGWRRBTN.setEnabled(True)
         self.isGWRRBTN.setCheckable(True)
-        self.isGWRRBTN.setChecked(True)
+        self.isGWRRBTN.setChecked(False)
         self.isGWRRBTN.setObjectName("isGWRRBTN")
         self.horizontalLayout_2.addWidget(self.isGWRRBTN)
-        self.isMGWRRBTN = QtWidgets.QRadioButton(self.horizontalLayoutWidget_2)
-        self.isMGWRRBTN.setChecked(False)
-        self.isMGWRRBTN.setObjectName("isMGWRRBTN")
-        self.horizontalLayout_2.addWidget(self.isMGWRRBTN)
         self.kernelDropdownGrou = QtWidgets.QGroupBox(Dialog)
-        self.kernelDropdownGrou.setGeometry(QtCore.QRect(10, 250, 271, 51))
+        self.kernelDropdownGrou.setGeometry(QtCore.QRect(10, 255, 271, 51))
         self.kernelDropdownGrou.setObjectName("kernelDropdownGrou")
         self.horizontalLayoutWidget_3 = QtWidgets.QWidget(self.kernelDropdownGrou)
         self.horizontalLayoutWidget_3.setGeometry(QtCore.QRect(10, 20, 256, 31))
@@ -147,7 +145,7 @@ class Ui_Dialog(object):
         self.shapeBox.addItem("")
         self.horizontalLayout_3.addWidget(self.shapeBox)
         self.groupBox_9 = QtWidgets.QGroupBox(Dialog)
-        self.groupBox_9.setGeometry(QtCore.QRect(10, 300, 271, 166))
+        self.groupBox_9.setGeometry(QtCore.QRect(10, 310, 271, 161))
         self.groupBox_9.setObjectName("groupBox_9")
         self.bwDropdown = QtWidgets.QComboBox(self.groupBox_9)
         self.bwDropdown.setGeometry(QtCore.QRect(10, 20, 256, 21))
@@ -156,7 +154,7 @@ class Ui_Dialog(object):
         self.bwDropdown.addItem("")
         self.bwDropdown.addItem("")
         self.formLayoutWidget = QtWidgets.QWidget(self.groupBox_9)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(10, 50, 236, 106))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(10, 50, 236, 101))
         self.formLayoutWidget.setObjectName("formLayoutWidget")
         self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
         self.formLayout.setLabelAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
@@ -192,7 +190,7 @@ class Ui_Dialog(object):
         self.label_11.setObjectName("label_11")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_11)
         self.groupBox_4 = QtWidgets.QGroupBox(Dialog)
-        self.groupBox_4.setGeometry(QtCore.QRect(10, 50, 271, 156))
+        self.groupBox_4.setGeometry(QtCore.QRect(10, 50, 271, 151))
         self.groupBox_4.setObjectName("groupBox_4")
         self.horizontalLayoutWidget = QtWidgets.QWidget(self.groupBox_4)
         self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 125, 256, 21))
@@ -219,9 +217,9 @@ class Ui_Dialog(object):
         self.addID = QtWidgets.QToolButton(self.gridLayoutWidget_4)
         self.addID.setObjectName("addID")
         self.gridLayout_4.addWidget(self.addID, 0, 2, 1, 1)
-        self.label_3 = QtWidgets.QLabel(self.gridLayoutWidget_4)
-        self.label_3.setObjectName("label_3")
-        self.gridLayout_4.addWidget(self.label_3, 2, 0, 1, 1)
+        self.label_Y = QtWidgets.QLabel(self.gridLayoutWidget_4)
+        self.label_Y.setObjectName("label_Y")
+        self.gridLayout_4.addWidget(self.label_Y, 2, 0, 1, 1)
         self.label = QtWidgets.QLabel(self.gridLayoutWidget_4)
         self.label.setObjectName("label")
         self.gridLayout_4.addWidget(self.label, 0, 0, 1, 1)
@@ -231,9 +229,9 @@ class Ui_Dialog(object):
         self.idLabel.setReadOnly(True)
         self.idLabel.setObjectName("idLabel")
         self.gridLayout_4.addWidget(self.idLabel, 0, 1, 1, 1)
-        self.label_2 = QtWidgets.QLabel(self.gridLayoutWidget_4)
-        self.label_2.setObjectName("label_2")
-        self.gridLayout_4.addWidget(self.label_2, 1, 0, 1, 1)
+        self.label_X = QtWidgets.QLabel(self.gridLayoutWidget_4)
+        self.label_X.setObjectName("label_X")
+        self.gridLayout_4.addWidget(self.label_X, 1, 0, 1, 1)
         self.yCoorLabel = QtWidgets.QLineEdit(self.gridLayoutWidget_4)
         self.yCoorLabel.setReadOnly(True)
         self.yCoorLabel.setObjectName("yCoorLabel")
@@ -265,11 +263,11 @@ class Ui_Dialog(object):
         self.openDataPath.setGeometry(QtCore.QRect(11, 21, 221, 21))
         self.openDataPath.setObjectName("openDataPath")
         self.groupBox_10 = QtWidgets.QGroupBox(Dialog)
-        self.groupBox_10.setGeometry(QtCore.QRect(290, 385, 461, 81))
+        self.groupBox_10.setGeometry(QtCore.QRect(290, 390, 461, 81))
         self.groupBox_10.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft)
         self.groupBox_10.setObjectName("groupBox_10")
         self.gridLayoutWidget_5 = QtWidgets.QWidget(self.groupBox_10)
-        self.gridLayoutWidget_5.setGeometry(QtCore.QRect(10, 20, 381, 51))
+        self.gridLayoutWidget_5.setGeometry(QtCore.QRect(10, 20, 381, 46))
         self.gridLayoutWidget_5.setObjectName("gridLayoutWidget_5")
         self.gridLayout_5 = QtWidgets.QGridLayout(self.gridLayoutWidget_5)
         self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
@@ -277,7 +275,7 @@ class Ui_Dialog(object):
         self.groupBox_11 = QtWidgets.QGroupBox(self.gridLayoutWidget_5)
         self.groupBox_11.setObjectName("groupBox_11")
         self.optimCriDropdown = QtWidgets.QComboBox(self.groupBox_11)
-        self.optimCriDropdown.setGeometry(QtCore.QRect(10, 20, 161, 21))
+        self.optimCriDropdown.setGeometry(QtCore.QRect(10, 15, 161, 21))
         self.optimCriDropdown.setObjectName("optimCriDropdown")
         self.optimCriDropdown.addItem("")
         self.optimCriDropdown.addItem("")
@@ -287,19 +285,19 @@ class Ui_Dialog(object):
         self.groupBox_12 = QtWidgets.QGroupBox(self.gridLayoutWidget_5)
         self.groupBox_12.setObjectName("groupBox_12")
         self.modelTypeDropdown = QtWidgets.QComboBox(self.groupBox_12)
-        self.modelTypeDropdown.setGeometry(QtCore.QRect(10, 20, 161, 21))
+        self.modelTypeDropdown.setGeometry(QtCore.QRect(10, 15, 161, 21))
         self.modelTypeDropdown.setObjectName("modelTypeDropdown")
         self.modelTypeDropdown.addItem("")
         self.gridLayout_5.addWidget(self.groupBox_12, 0, 1, 1, 1)
         self.advancedBTN = QtWidgets.QToolButton(self.groupBox_10)
-        self.advancedBTN.setGeometry(QtCore.QRect(400, 40, 56, 26))
+        self.advancedBTN.setGeometry(QtCore.QRect(400, 35, 56, 26))
         self.advancedBTN.setObjectName("advancedBTN")
         self.runBTN = QtWidgets.QPushButton(Dialog)
-        self.runBTN.setGeometry(QtCore.QRect(615, 485, 121, 61))
+        self.runBTN.setGeometry(QtCore.QRect(615, 480, 121, 76))
         self.runBTN.setFocusPolicy(QtCore.Qt.NoFocus)
         self.runBTN.setObjectName("runBTN")
         self.groupBox_13 = QtWidgets.QGroupBox(Dialog)
-        self.groupBox_13.setGeometry(QtCore.QRect(10, 470, 571, 81))
+        self.groupBox_13.setGeometry(QtCore.QRect(10, 475, 571, 81))
         self.groupBox_13.setObjectName("groupBox_13")
         self.gridLayoutWidget_2 = QtWidgets.QWidget(self.groupBox_13)
         self.gridLayoutWidget_2.setGeometry(QtCore.QRect(9, 20, 551, 54))
@@ -326,25 +324,6 @@ class Ui_Dialog(object):
         self.label_8 = QtWidgets.QLabel(self.gridLayoutWidget_2)
         self.label_8.setObjectName("label_8")
         self.gridLayout_2.addWidget(self.label_8, 1, 0, 1, 1)
-        self.predictionBox = QtWidgets.QGroupBox(Dialog)
-        self.predictionBox.setGeometry(QtCore.QRect(10, 555, 571, 51))
-        self.predictionBox.setObjectName("predictionBox")
-        self.horizontalLayoutWidget_4 = QtWidgets.QWidget(self.predictionBox)
-        self.horizontalLayoutWidget_4.setGeometry(QtCore.QRect(10, 20, 551, 23))
-        self.horizontalLayoutWidget_4.setObjectName("horizontalLayoutWidget_4")
-        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_4)
-        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.predictInputEdit = QtWidgets.QLineEdit(self.horizontalLayoutWidget_4)
-        self.predictInputEdit.setObjectName("predictInputEdit")
-        self.horizontalLayout_4.addWidget(self.predictInputEdit)
-        self.openPredictionBTN = QtWidgets.QToolButton(self.horizontalLayoutWidget_4)
-        self.openPredictionBTN.setObjectName("openPredictionBTN")
-        self.horizontalLayout_4.addWidget(self.openPredictionBTN)
-        self.runBTN_2 = QtWidgets.QPushButton(Dialog)
-        self.runBTN_2.setGeometry(QtCore.QRect(615, 570, 121, 31))
-        self.runBTN_2.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.runBTN_2.setObjectName("runBTN_2")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -364,15 +343,15 @@ class Ui_Dialog(object):
         self.removeLocal.setText(_translate("Dialog", "<"))
         self.addLocal.setText(_translate("Dialog", ">"))
         self.groupBox_7.setTitle(_translate("Dialog", "GWR Mode"))
-        self.isGWRRBTN.setText(_translate("Dialog", "GWR"))
         self.isMGWRRBTN.setText(_translate("Dialog", "MGWR"))
-        self.kernelDropdownGrou.setTitle(_translate("Dialog", "Kernel"))
+        self.isGWRRBTN.setText(_translate("Dialog", "GWR"))
+        self.kernelDropdownGrou.setTitle(_translate("Dialog", "Spatial Kernel"))
         self.fixedBox.setItemText(0, _translate("Dialog", "Adaptive"))
         self.fixedBox.setItemText(1, _translate("Dialog", "Fixed"))
         self.shapeBox.setItemText(0, _translate("Dialog", "Bisquare"))
         self.shapeBox.setItemText(1, _translate("Dialog", "Gaussian"))
         self.shapeBox.setItemText(2, _translate("Dialog", "Exponential"))
-        self.groupBox_9.setTitle(_translate("Dialog", "Bandwidth"))
+        self.groupBox_9.setTitle(_translate("Dialog", "Bandwidth Searching"))
         self.bwDropdown.setItemText(0, _translate("Dialog", "Golden Section"))
         self.bwDropdown.setItemText(1, _translate("Dialog", "Interval Search"))
         self.bwDropdown.setItemText(2, _translate("Dialog", "Pre-defiend bandwidth"))
@@ -385,9 +364,9 @@ class Ui_Dialog(object):
         self.isSphCoorRBTN.setText(_translate("Dialog", "Spherical"))
         self.removeYCoor.setText(_translate("Dialog", ">"))
         self.addID.setText(_translate("Dialog", "<"))
-        self.label_3.setText(_translate("Dialog", "Y"))
+        self.label_Y.setText(_translate("Dialog", "Y    "))
         self.label.setText(_translate("Dialog", "ID"))
-        self.label_2.setText(_translate("Dialog", "X"))
+        self.label_X.setText(_translate("Dialog", "X    "))
         self.addXCoor.setText(_translate("Dialog", "<"))
         self.removeXCoor.setText(_translate("Dialog", ">"))
         self.addYCoor.setText(_translate("Dialog", "<"))
@@ -409,9 +388,6 @@ class Ui_Dialog(object):
         self.saveSumBTN.setText(_translate("Dialog", "..."))
         self.label_7.setText(_translate("Dialog", "Summary File"))
         self.label_8.setText(_translate("Dialog", "Parameter Estimates"))
-        self.predictionBox.setTitle(_translate("Dialog", "Prediction (optional)"))
-        self.openPredictionBTN.setText(_translate("Dialog", "..."))
-        self.runBTN_2.setText(_translate("Dialog", "Help"))
 
     def update_label(self):
         current_time = self.elapsedTimeFormatter(self.time)
@@ -434,7 +410,7 @@ class Ui_Dialog(object):
         
 
         self.openDataBTN.clicked.connect(self.openData)
-        self.openPredictionBTN.clicked.connect(self.openPredictData)
+        #self.openPredictionBTN.clicked.connect(self.openPredictData)
         
         self.saveSumBTN.clicked.connect(lambda:self.getSaveFile(0))
         self.saveBetasBTN.clicked.connect(lambda:self.getSaveFile(1))
@@ -491,7 +467,7 @@ class Ui_Dialog(object):
         self.bwDropdown.currentIndexChanged.connect(self.changeSearchMethod)
         self.modelTypeDropdown.currentIndexChanged.connect(self.modelChanged)
 
-        self.gwrMode()
+        self.mgwrMode()
 
         self.thread = AThread(self)
         self.thread.finished.connect(self.haha)
@@ -507,16 +483,21 @@ class Ui_Dialog(object):
         self.path = os.path.dirname(os.path.dirname(os.path.dirname(sys.argv[0])))
     
     
-        self.advDialog = QtWidgets.QDialog()
-        self.advUI = Ui_advDialog()
-        self.advUI.setupUi(self.advDialog)
-        self.advUI.addActionsToUI()
+        self.advMGWRDialog = QtWidgets.QDialog()
+        self.advMGWRUI = Ui_advMGWRDialog()
+        self.advMGWRUI.setupUi(self.advMGWRDialog)
+        self.advMGWRUI.addActionsToUI()
+    
+        self.advGWRDialog = QtWidgets.QDialog()
+        self.advGWRUI = Ui_advGWRDialog()
+        self.advGWRUI.setupUi(self.advGWRDialog)
+        self.advGWRUI.addActionsToUI()
             
 
     
     def openData(self):
         try:
-            fileName,_ = QtWidgets.QFileDialog.getOpenFileName(None, 'OpenFile',self.path,"Excel(*.xls *.xlsx);;CSV (*.csv)")
+            fileName,_ = QtWidgets.QFileDialog.getOpenFileName(None, 'OpenFile',self.path,"Table(*.csv *.xls *.xlsx)")
             if fileName:
                 self.openDataPath.setText(fileName)
                 if fileName.endswith('.csv'):
@@ -648,8 +629,8 @@ class Ui_Dialog(object):
     def gwrMode(self):
 
         #self.predictionBox.show()
-        self.predictionBox.setEnabled(True)
-        self.advancedBTN.setEnabled(False)
+        #self.predictionBox.setEnabled(True)
+        self.advancedBTN.setEnabled(True)
         
         self.modelTypeDropdown.clear()
         self.modelTypeDropdown.addItem("Gaussian")
@@ -663,7 +644,7 @@ class Ui_Dialog(object):
 
     
     def mgwrMode(self):
-        self.predictionBox.setEnabled(False)
+        #self.predictionBox.setEnabled(False)
         self.advancedBTN.setEnabled(True)
         
         self.modelTypeDropdown.clear()
@@ -683,15 +664,18 @@ class Ui_Dialog(object):
     
 
     def advancedOnClick(self):
+        if self.isGWR:
+            self.advGWRUI.loadSettings()
+            self.advGWRDialog.exec_()
+        
         if self.isMGWR:
-            self.advUI.loadSettings()
-            self.advDialog.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
-            self.advDialog.exec_()
+            self.advMGWRUI.loadSettings()
+            self.advMGWRDialog.exec_()
     
     
     #Get 3 Save Paths for control, summary and betas
     def getSaveFile(self,ext):
-        fileName,_ = QtWidgets.QFileDialog.getSaveFileName(None, 'SaveFile',os.path.join(os.path.dirname(self.path),'GWR_session'))
+        fileName,_ = QtWidgets.QFileDialog.getSaveFileName(None, 'SaveFile',os.path.join(os.path.dirname(self.path),'MGWR_session'))
         if fileName:
             if ext == 0:
                 self.sumFileSavePath.setText(fileName+'_summary.txt')
@@ -759,9 +743,9 @@ class Ui_Dialog(object):
             self.xCoor = self.data[[self.xCoorLabel.text()]]
             self.yCoor = self.data[[self.yCoorLabel.text()]]
             self.comp_data = pd.concat([self.id,self.y, self.X, self.xCoor,self.yCoor],axis=1).dropna()
-            self.id = self.comp_data[[self.idLabel.text()]].as_matrix().reshape(-1,1)
-            self.y = self.comp_data[[self.responseLabel.text()]].as_matrix().reshape(-1,1)
-            self.X = self.comp_data[self.XNames].as_matrix()
+            self.id = self.comp_data[[self.idLabel.text()]].values.reshape(-1,1)
+            self.y = self.comp_data[[self.responseLabel.text()]].values.reshape(-1,1)
+            self.X = self.comp_data[self.XNames].values
             self.xCoor = self.comp_data[[self.xCoorLabel.text()]].ix[:,0]
             self.yCoor = self.comp_data[[self.yCoorLabel.text()]].ix[:,0]
             
@@ -797,21 +781,30 @@ class Ui_Dialog(object):
                 self.family = Gaussian()
             elif self.modelTypeDropdown.currentText() == "Poisson":
                 self.family = Poisson()
-                self.offset = self.data[[self.OffsetLabel.text()]].as_matrix().reshape(-1,1)
+                if self.OffsetLabel.text() is not '':
+                    self.offset = self.data[[self.OffsetLabel.text()]].as_matrix().reshape(-1,1)
             elif self.modelTypeDropdown.currentText() == "Binomial":
                 self.family = Binomial()
             
+            
             #MGWR Advanced Settings
-            self.varSTD = self.advUI.varSTD
+            self.varSTD = self.advMGWRUI.varSTD
             if self.varSTD == 'On' and self.isMGWR:
                 self.X = (self.X - np.mean(self.X, axis=0)) / np.std(self.X, axis=0)
                 self.y = (self.y - np.mean(self.y, axis=0)) / np.std(self.y, axis=0)
                 self.X[:,0] = 1
     
-            self.SOC = self.advUI.soc
-            self.initBeta = self.advUI.init
-            self.tol_multi = float(self.advUI.converg)
+            self.SOC = self.advMGWRUI.soc
+            self.initBeta = self.advMGWRUI.init
+            self.tol_multi = float(self.advMGWRUI.converg)
             self.tol_gwr = 1e-05
+            
+            if self.isMGWR:
+                self.mcTest = self.advMGWRUI.mcTest
+                self.locollinear = self.advMGWRUI.locollinear
+            if self.isGWR:
+                self.mcTest = self.advGWRUI.mcTest
+                self.locollinear = self.advGWRUI.locollinear
 
             if self.initBeta == "GWR estimate":
                 self.init_multi = True
@@ -828,7 +821,6 @@ class Ui_Dialog(object):
     
     def run_onclick(self):
         
-        #print(self.advUI.soc,self.advUI.init,self.advUI.converg,self.advUI.varSTD)
         if not self.preCheckEmptyFields():
             err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Please fix inputs in red!")
             
@@ -838,13 +830,11 @@ class Ui_Dialog(object):
             err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Something wrong when loading variables to model. Please double check you data. No Missing values allowed.")
             return
     
-
-
         self.thread.start()
-
         self.time.start()
         self.timer.start(1000)  # every 10,000 milliseconds
         self.loaderUI.restartTimer()
+        self.runningDialog.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowCloseButtonHint)
         self.runningDialog.exec_()
     
     def haha(self):
@@ -856,30 +846,41 @@ class Ui_Dialog(object):
         smyui = Ui_summaryDlg()
         smyui.setupUi(summaryDlg)
         smyui.loadText(self.sumFileSavePath.text())
+        summaryDlg.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowCloseButtonHint)
         summaryDlg.exec_()
     
 
     
     #Run model
     def runGWR(self):
-        
+        print(self.mcTest,self.locollinear)
         self.begin_t = datetime.now()
         #self.GLMResult = GLM(self.y,self.X).fit()
         if self.isGWR:
             print ("running GWR")
+            self.selector = Sel_BW(self.coords,self.y,self.X,kernel=self.kernel,fixed=self.fixed,family=self.family, offset=self.offset,constant=False,spherical=self.coorType)
             if self.search == 'golden_section':
-                self.bw = Sel_BW(self.coords,self.y,self.X,kernel=self.kernel,fixed=self.fixed,family=self.family, offset=self.offset,constant=False,spherical=self.coorType).search(search_method='golden_section',criterion=self.criterion)
+                self.bw = self.selector.search(search_method='golden_section',criterion=self.criterion)
             
             elif self.search == 'interval':
                 min = int(self.bwMin.text())
                 max = int(self.bwMax.text())
                 step = int(self.bwInterval.text())
-                self.bw = Sel_BW(self.coords, self.y, self.X,kernel=self.kernel, fixed=self.fixed,family=self.family,offset=self.offset, constant=False,spherical=self.coorType).search(search_method='interval',bw_min=min,bw_max=max,interval=step,criterion=self.criterion)
+                self.bw = self.selector.search(search_method='interval',bw_min=min,bw_max=max,interval=step,criterion=self.criterion)
                 
             else:
                 self.bw = int(self.bwPreDefined.text())
             
             self.results = GWR(self.coords, self.y, self.X, self.bw, fixed=self.fixed, kernel=self.kernel, family=self.family,offset=self.offset, constant=False,spherical=self.coorType).fit()
+            
+            if self.mcTest != "Off":
+                print("MC Test")
+                self.testMCResults = self.results.spatial_variability(self.selector)
+            
+            if self.locollinear != "Off":
+                print("Local")
+                print(self.results,self.X.shape,self.y.shape)
+                self.locollinearResults = self.results.local_collinearity()
             
             self.end_t = datetime.now()
             outputGWR(self)
@@ -911,9 +912,18 @@ class Ui_Dialog(object):
         
         if self.isMGWR:
             print ("running MGWR")
-            self.bw = Sel_BW(self.coords, self.y, self.X, fixed=self.fixed,kernel=self.kernel, multi=True,constant=False,spherical=self.coorType)
-            self.bws = self.bw.search(search_method='golden_section',criterion=self.criterion, rss_score=self.rss_score, tol_multi=self.tol_multi)
-            self.results = MGWR(self.coords, self.y, self.X, self.bw, kernel=self.kernel, fixed=self.fixed,constant=False,spherical=self.coorType).fit()
+            self.selector = Sel_BW(self.coords, self.y, self.X, fixed=self.fixed,kernel=self.kernel, multi=True,constant=False,spherical=self.coorType)
+            self.bws = self.selector.search(search_method='golden_section',criterion=self.criterion, rss_score=self.rss_score, tol_multi=self.tol_multi)
+            self.results = MGWR(self.coords, self.y, self.X, self.selector, kernel=self.kernel, fixed=self.fixed,constant=False,spherical=self.coorType).fit()
+            
+            if self.mcTest != "Off":
+                print("MGWR MC Test")
+                self.testMCResults = self.results.spatial_variability(self.selector)
+            
+            if self.locollinear != "Off":
+                print("MGWR Local")
+                self.locollinearResults = self.results.local_collinearity()
+            
             self.end_t = datetime.now()
                 
             outputMGWR(self)

@@ -19,6 +19,7 @@ class Ui_summaryDlg(object):
         summaryDlg.setLayout(grid)
         font = QtGui.QFont()
         font.setFamily("Courier New")
+        font.setPointSize(10)
         summaryDlg.setFont(font)
         
         self.summaryEdit = QtWidgets.QTextEdit()
@@ -29,7 +30,7 @@ class Ui_summaryDlg(object):
 
     def retranslateUi(self, summaryDlg):
         _translate = QtCore.QCoreApplication.translate
-        summaryDlg.setWindowTitle(_translate("summaryDlg", "GWR Summary"))
+        summaryDlg.setWindowTitle(_translate("summaryDlg", "Summary"))
 
     def loadText(self,filePath):
         self.summaryEdit.setReadOnly(True)
