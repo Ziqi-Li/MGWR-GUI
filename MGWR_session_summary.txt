@@ -2,26 +2,27 @@
 Model type                                                              Gaussian
 Number of observations:                                                       99
 Number of missing rows:                                                        0
-Number of covariates:                                                          3
+Number of covariates:                                                          4
 Dependent variable:                                                z_new_pct_dem
 Variable standardization:                                                     On
-Total runtime:                                                           0:00:03
+Total runtime:                                                           0:00:07
 
 Global Regression Results
 --------------------------------------------------------------------------------
-Residual sum of squares:                                                  88.074
-Log-likelihood:                                                         -134.686
-AIC:                                                                     275.372
-AICc:                                                                    277.798
-BIC:                                                                    -353.058
-R2:                                                                        0.110
-Adj. R2:                                                                   0.092
+Residual sum of squares:                                                  73.359
+Log-likelihood:                                                         -125.637
+AIC:                                                                     259.274
+AICc:                                                                    261.919
+BIC:                                                                    -363.178
+R2:                                                                        0.445
+Adj. R2:                                                                   0.427
 
 Variable                                   Est.         SE  t(Est/SE)    p-value
 ------------------------------------ ---------- ---------- ---------- ----------
-Intercept                                -0.000      0.096     -0.000      1.000
-z_log_pop_den                            -0.212      0.098     -2.168      0.030
-z_log_3rd_party                          -0.222      0.098     -2.268      0.023
+Intercept                                -0.507      0.126     -4.040      0.000
+z_median_income                          -1.162      0.294     -3.945      0.000
+z_pct_bachelor_higher                     0.903      0.219      4.123      0.000
+z_gini                                    0.266      0.156      1.709      0.087
 
 Multi-Scale Geographically Weighted Regression (MGWR) Results
 --------------------------------------------------------------------------------
@@ -30,32 +31,34 @@ Spatial kernel:                                                Adaptive bisquare
 Criterion for optimal bandwidth:                                            AICc
 Score of change (SOC) type:                                          Smoothing f
 Termination criterion for MGWR:                                          1.0e-05
-Number of iterations used:                                                    34
+Number of iterations used:                                                    60
 
 MGWR bandwidths
 --------------------------------------------------------------------------------
 Variable                  Bandwidth      ENP_j   Adj t-val(95%)   Adj alpha(95%)
-Intercept                    43.000      4.740            2.607            0.011
-z_log_pop_den                53.000      4.354            2.576            0.011
-z_log_3rd_party              43.000      4.134            2.557            0.012
+Intercept                    43.000      5.314            2.649            0.009
+z_median_income              43.000      4.425            2.582            0.011
+z_pct_bachelor_higher         97.000      1.697            2.210            0.029
+z_gini                       95.000      1.530            2.167            0.033
 
 Diagnostic Information
 --------------------------------------------------------------------------------
-Residual sum of squares:                                                  45.890
-Effective number of parameters (trace(S)):                                13.228
-Degree of freedom (n - trace(S)):                                         85.772
-Sigma estimate:                                                            0.731
-Log-likelihood:                                                         -102.416
-AIC:                                                                     233.289
-AICc:                                                                    238.462
-BIC:                                                                     270.213
+Residual sum of squares:                                                  41.784
+Effective number of parameters (trace(S)):                                12.967
+Degree of freedom (n - trace(S)):                                         86.033
+Sigma estimate:                                                            0.697
+Log-likelihood:                                                          -97.776
+AIC:                                                                     223.485
+AICc:                                                                    228.460
+BIC:                                                                     259.730
 
 Summary Statistics For MGWR Parameter Estimates
 --------------------------------------------------------------------------------
 Variable                        Mean        STD        Min     Median        Max
 --------------------      ---------- ---------- ---------- ---------- ----------
-Intercept                     -0.711      0.625     -1.490     -0.920      0.324
-z_log_pop_den                  0.621      0.362     -0.020      0.814      0.958
-z_log_3rd_party               -1.022      0.691     -1.751     -1.267      0.183
+Intercept                     -0.594      0.380     -0.969     -0.706      0.252
+z_median_income               -1.702      0.315     -2.099     -1.738     -1.202
+z_pct_bachelor_higher          1.215      0.132      0.890      1.271      1.273
+z_gini                        -0.073      0.077     -0.107     -0.106      0.126
 ================================================================================
 
