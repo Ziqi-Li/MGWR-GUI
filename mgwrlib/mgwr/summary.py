@@ -1,6 +1,6 @@
 import numpy as np
-from mgwrlib.spglm.family import Gaussian, Binomial, Poisson
-from mgwrlib.spglm.glm import GLM
+from spglm.family import Gaussian, Binomial, Poisson
+from spglm.glm import GLM
 from .diagnostics import get_AICc
 
 
@@ -65,7 +65,8 @@ def summaryGWR(self,diag):
         summary += "%-55s %20s\n" % ('Spatial kernel:', 'Fixed ' + self.model.kernel)
     else:
         summary += "%-59s %20s\n" % ('Spatial kernel:', 'Adaptive ' + self.model.kernel)
-    
+        
+    summary += "%-59s %20s\n" % ('Criterion for optimal bandwidth:', self.model.criterion)
     summary += "%-67s %12.3f\n" % ('Bandwidth used:', self.model.bw)
 
     summary += "\n%s\n" % ('Diagnostic Information')

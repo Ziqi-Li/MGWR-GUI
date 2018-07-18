@@ -11,7 +11,7 @@ from scipy.stats.mstats import mquantiles
 from datetime import datetime
 import numpy as np
 import pandas as pd
-from mgwrlib.spglm.family import Gaussian, Binomial, Poisson
+from spglm.family import Gaussian, Binomial, Poisson
 from mgwrlib.mgwr.summary import *
 
 

@@ -1,28 +1,28 @@
 ================================================================================
 Model type                                                              Gaussian
-Number of observations:                                                       99
+Number of observations:                                                      159
 Number of missing rows:                                                        0
 Number of covariates:                                                          4
-Dependent variable:                                                z_new_pct_dem
+Dependent variable:                                                      PctBach
 Variable standardization:                                                     On
-Total runtime:                                                           0:00:07
+Total runtime:                                                           0:00:03
 
 Global Regression Results
 --------------------------------------------------------------------------------
-Residual sum of squares:                                                  73.359
-Log-likelihood:                                                         -125.637
-AIC:                                                                     259.274
-AICc:                                                                    261.919
-BIC:                                                                    -363.178
-R2:                                                                        0.445
-Adj. R2:                                                                   0.427
+Residual sum of squares:                                                  77.203
+Log-likelihood:                                                         -168.175
+AIC:                                                                     344.351
+AICc:                                                                    346.743
+BIC:                                                                    -708.477
+R2:                                                                        0.514
+Adj. R2:                                                                   0.505
 
 Variable                                   Est.         SE  t(Est/SE)    p-value
 ------------------------------------ ---------- ---------- ---------- ----------
-Intercept                                -0.507      0.126     -4.040      0.000
-z_median_income                          -1.162      0.294     -3.945      0.000
-z_pct_bachelor_higher                     0.903      0.219      4.123      0.000
-z_gini                                    0.266      0.156      1.709      0.087
+Intercept                                 0.000      0.056      0.000      1.000
+PctFB                                     0.570      0.061      9.414      0.000
+PctPov                                   -0.394      0.089     -4.440      0.000
+PctBlack                                  0.245      0.084      2.898      0.004
 
 Multi-Scale Geographically Weighted Regression (MGWR) Results
 --------------------------------------------------------------------------------
@@ -31,34 +31,34 @@ Spatial kernel:                                                Adaptive bisquare
 Criterion for optimal bandwidth:                                            AICc
 Score of change (SOC) type:                                          Smoothing f
 Termination criterion for MGWR:                                          1.0e-05
-Number of iterations used:                                                    60
+Number of iterations used:                                                    11
 
 MGWR bandwidths
 --------------------------------------------------------------------------------
 Variable                  Bandwidth      ENP_j   Adj t-val(95%)   Adj alpha(95%)
-Intercept                    43.000      5.314            2.649            0.009
-z_median_income              43.000      4.425            2.582            0.011
-z_pct_bachelor_higher         97.000      1.697            2.210            0.029
-z_gini                       95.000      1.530            2.167            0.033
+Intercept                   157.000      1.682            2.194            0.030
+PctFB                       101.000      3.575            2.485            0.014
+PctPov                      157.000      1.537            2.157            0.033
+PctBlack                    127.000      2.518            2.353            0.020
 
 Diagnostic Information
 --------------------------------------------------------------------------------
-Residual sum of squares:                                                  41.784
-Effective number of parameters (trace(S)):                                12.967
-Degree of freedom (n - trace(S)):                                         86.033
-Sigma estimate:                                                            0.697
-Log-likelihood:                                                          -97.776
-AIC:                                                                     223.485
-AICc:                                                                    228.460
-BIC:                                                                     259.730
+Residual sum of squares:                                                  59.673
+Effective number of parameters (trace(S)):                                 9.311
+Degree of freedom (n - trace(S)):                                        149.689
+Sigma estimate:                                                            0.631
+Log-likelihood:                                                         -147.699
+AIC:                                                                     316.020
+AICc:                                                                    317.600
+BIC:                                                                     347.665
 
 Summary Statistics For MGWR Parameter Estimates
 --------------------------------------------------------------------------------
 Variable                        Mean        STD        Min     Median        Max
 --------------------      ---------- ---------- ---------- ---------- ----------
-Intercept                     -0.594      0.380     -0.969     -0.706      0.252
-z_median_income               -1.702      0.315     -2.099     -1.738     -1.202
-z_pct_bachelor_higher          1.215      0.132      0.890      1.271      1.273
-z_gini                        -0.073      0.077     -0.107     -0.106      0.126
+Intercept                      0.005      0.036     -0.065      0.014      0.062
+PctFB                          0.594      0.254      0.190      0.629      0.890
+PctPov                        -0.264      0.018     -0.294     -0.264     -0.234
+PctBlack                       0.138      0.060      0.040      0.124      0.252
 ================================================================================
 

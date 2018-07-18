@@ -7,7 +7,7 @@ from copy import deepcopy
 import copy
 from collections import namedtuple
 
-def golden_section(a, c, delta, function, tol, max_iter, int_score=False):
+def golden_section(a, c, delta, function, tol, max_iter, int_score=False, multi=True):
     """
     Golden section search routine
     Method: p212, 9.6.4
@@ -58,12 +58,16 @@ def golden_section(a, c, delta, function, tol, max_iter, int_score=False):
             score_b = dict[b]
         else:
             score_b = function(b)
+            if multi == False:
+                print("Bandwidth: ",np.round(b, 2), ", score: ", "{0:.2f}".format(score_b[0]))
             dict[b] = score_b
         
         if d in dict:
             score_d = dict[d]
         else:
             score_d = function(d)
+            if multi == False:
+                print("Bandwidth: ",np.round(d, 2), ", score: ", "{0:.2f}".format(score_d[0]))
             dict[d] = score_d
 
         if score_b <= score_d:
@@ -88,9 +92,10 @@ def golden_section(a, c, delta, function, tol, max_iter, int_score=False):
         output.append((opt_val, opt_score))
         diff = score_b - score_d
         score = opt_score
+
     return np.round(opt_val, 2), opt_score, output
 
-def equal_interval(l_bound, u_bound, interval, function, int_score=False):
+def equal_interval(l_bound, u_bound, interval, function, int_score=False,multi=True):
     """
     Interval search, using interval as stepsize
 
@@ -128,7 +133,11 @@ def equal_interval(l_bound, u_bound, interval, function, int_score=False):
     output = []
 
     score_a = function(a)
+    if multi == False:
+        print("Bandwidth:",a,", score:", "{0:.2f}".format(score_a[0]))
     score_c = function(c)
+    if multi == False:
+        print("Bandwidth:",c,", score:", "{0:.2f}".format(score_c[0]))
 
     output.append((a,score_a))
     output.append((c,score_c))
@@ -142,7 +151,7 @@ def equal_interval(l_bound, u_bound, interval, function, int_score=False):
 
     while b < c:
         score_b = function(b)
-
+        print("Bandwidth:",b,", score:", "{0:.2f}".format(score_b[0]))
         output.append((b,score_b))
 
         if score_b < opt_score:
@@ -192,7 +201,7 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
         def tqdm(x): #otherwise, just passthrough the range
             return x
     for iters in tqdm(range(1, max_iter+1)):
-        print(iters)
+        
         new_XB = np.zeros_like(X)
         bws = []
         vals = []
@@ -241,6 +250,8 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
         FUNCs.append(copy.deepcopy(funcs))
         if delta < tol:
             break
+
+        print("Current iteration:",iters,", score:", np.round(score,7))
 
     opt_bws = BWs[-1]
     return (opt_bws, np.array(BWs),

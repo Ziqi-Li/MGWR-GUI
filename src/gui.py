@@ -8,11 +8,12 @@ import os,sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 import numpy as np
 import pandas as pd
+from simpledbf import Dbf5
 from datetime import datetime
 from mgwrlib.mgwr.gwr import GWR,MGWR
 from mgwrlib.mgwr.sel_bw import Sel_BW
-from mgwrlib.spglm.glm import GLM
-from mgwrlib.spglm.family import Gaussian, Binomial, Poisson
+from spglm.glm import GLM
+from spglm.family import Gaussian, Binomial, Poisson
 from .outputs import *
 from .loader import Ui_runningDialog
 from .advancedMGWR import Ui_advMGWRDialog
@@ -505,8 +506,8 @@ class Ui_Dialog(object):
 
         self.mgwrMode()
 
-        self.thread = AThread(self)
-        self.thread.finished.connect(self.haha)
+        self.thread = GWRThread(self)
+        self.thread.finished.connect(self.workDone)
         self.runningWindow = QtWidgets.QDialog()
         
         self.runningDialog = QtWidgets.QDialog()
@@ -533,16 +534,17 @@ class Ui_Dialog(object):
     
     def openData(self):
         try:
-            fileName,_ = QtWidgets.QFileDialog.getOpenFileName(None, 'OpenFile',self.path,"Table(*.csv *.xls *.xlsx)")
+            fileName,_ = QtWidgets.QFileDialog.getOpenFileName(None, 'OpenFile',self.path,"Table(*.csv *.xls *.xlsx *.dbf)")
             if fileName:
                 self.openDataPath.setText(fileName)
                 if fileName.endswith('.csv'):
                     self.data = pd.read_csv(fileName)
-                    fields = self.data.columns.tolist()
                 elif fileName.endswith('.xlsx') or fileName.endswith('.xls'):
                     self.data = pd.read_excel(fileName)
-                    fields = self.data.columns.tolist()
+                elif fileName.endswith('.dbf'):
+                    self.data = Dbf5(fileName).to_dataframe()
                 
+                fields = self.data.columns.tolist()
                 self.localList.clear()
                 self.localList.addItem('Intercept')
                 self.variableList.clear()
@@ -606,9 +608,10 @@ class Ui_Dialog(object):
         lineEdit.setStyleSheet("")
     
     def greyOutLineEdit(self,lineEdit):
+        lineEdit.clear()
         lineEdit.setStyleSheet("background-color:LightGrey")
         lineEdit.setDisabled(True)
-        lineEdit.clear()
+    
     def deGreyOutLineEdit(self,lineEdit):
         lineEdit.setStyleSheet("")
         lineEdit.setDisabled(False)
@@ -774,16 +777,26 @@ class Ui_Dialog(object):
             self.data['Intercept'] = 1
             self.yName = self.responseLabel.text()
             self.XNames =  [str(self.localList.item(i).text()) for i in range(self.localList.count())]
+            if 'Intercept' in self.XNames:
+                self.constant = True
+                self.X = self.data[self.XNames].drop(columns=['Intercept'])
+
+            else:
+                self.constant = False
+                self.X = self.data[self.XNames]
+            
             self.y = self.data[[self.responseLabel.text()]]
-            self.X = self.data[self.XNames]
+            #self.X = self.data[self.XNames]
             self.xCoor = self.data[[self.xCoorLabel.text()]]
             self.yCoor = self.data[[self.yCoorLabel.text()]]
             self.comp_data = pd.concat([self.id,self.y, self.X, self.xCoor,self.yCoor],axis=1).dropna()
+            #self.comp_data = self.comp_data[self.comp_data.applymap(np.isreal).all(1)]
             self.id = self.comp_data[[self.idLabel.text()]].values.reshape(-1,1)
             self.y = self.comp_data[[self.responseLabel.text()]].values.reshape(-1,1)
-            self.X = self.comp_data[self.XNames].values
-            self.xCoor = self.comp_data[[self.xCoorLabel.text()]].ix[:,0]
-            self.yCoor = self.comp_data[[self.yCoorLabel.text()]].ix[:,0]
+            self.X = self.comp_data.ix[:,2:-2].values
+            self.xCoor = self.comp_data.ix[:,-2]
+            self.yCoor = self.comp_data.ix[:,-1]
+
             
             self.nObs = len(self.comp_data.index)
             self.nMiss = len(self.data.index) - self.nObs
@@ -828,7 +841,6 @@ class Ui_Dialog(object):
             if self.varSTD == 'On' and self.isMGWR:
                 self.X = (self.X - np.mean(self.X, axis=0)) / np.std(self.X, axis=0)
                 self.y = (self.y - np.mean(self.y, axis=0)) / np.std(self.y, axis=0)
-                self.X[:,0] = 1
     
             self.SOC = self.advMGWRUI.soc
             self.initBeta = self.advMGWRUI.init
@@ -859,23 +871,45 @@ class Ui_Dialog(object):
         
         if not self.preCheckEmptyFields():
             err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Please fix inputs in red!")
-            
             return
         
         if not self.loadDataModel():
             err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Something wrong when loading variables to model. Please double check you data. No Missing values allowed.")
             return
-    
+        
+        self.threadRunning = True
         self.thread.start()
+
         self.time.start()
         self.timer.start(1000)  # every 10,000 milliseconds
         self.loaderUI.restartTimer()
         self.runningDialog.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowCloseButtonHint)
+        #self.runningDialog.setWindowFlag(QtCore.Qt.WindowCloseButtonHint, False)
+        #self.loaderUI.connect(self.loaderUI, Qt.SIGNAL('triggered()'), self.closeEvent)
+        self.runningDialog.closeEvent = self.closeEvent
         self.runningDialog.exec_()
+            
     
-    def haha(self):
+
+    
+    def closeEvent(self, event):
+        if self.threadRunning:
+            reply=QtWidgets.QMessageBox.question(None,'Message',"Closing this diaglog will quit MGWR, are you sure to quit?",QtWidgets.QMessageBox.Yes,QtWidgets.QMessageBox.No)
+            if reply == QtWidgets.QMessageBox.Yes:
+            
+                #self.timer.stop()
+                #self.loaderUI.stopThread(self.thread)
+                event.accept()
+                #self.thread.stop()
+
+                QtWidgets.QApplication.quit()
+            else:
+                event.ignore()
+    
+    def workDone(self):
         self.timer.stop()
-        self.runningDialog.close()
+        self.threadRunning = False
+        #self.runningDialog.close()
         msg = QtWidgets.QMessageBox.information(None, "Success", "Running complete!\nTime Elapsed:\n" + self.elapsedTimeFormatter(self.time))
         
         summaryDlg = QtWidgets.QDialog()
@@ -889,16 +923,18 @@ class Ui_Dialog(object):
     
     #Run model
     def runGWR(self):
-        print(self.mcTest,self.locollinear)
         self.begin_t = datetime.now()
         #self.GLMResult = GLM(self.y,self.X).fit()
         if self.isGWR:
-            print ("running GWR")
-            self.selector = Sel_BW(self.coords,self.y,self.X,kernel=self.kernel,fixed=self.fixed,family=self.family, offset=self.offset,constant=False,spherical=self.coorType)
+            print("Started at: ", self.begin_t)
+            print ("Running GWR...")
+            self.selector = Sel_BW(self.coords,self.y,self.X,kernel=self.kernel,fixed=self.fixed,family=self.family, offset=self.offset,constant=self.constant,spherical=self.coorType)
             if self.search == 'golden_section':
+                print("Golden section search minimizing", self.criterion)
                 self.bw = self.selector.search(search_method='golden_section',criterion=self.criterion)
             
             elif self.search == 'interval':
+                print("Interval bandwidth searching:")
                 min = int(self.bwMin.text())
                 max = int(self.bwMax.text())
                 step = int(self.bwInterval.text())
@@ -907,15 +943,16 @@ class Ui_Dialog(object):
             else:
                 self.bw = int(self.bwPreDefined.text())
             
-            self.results = GWR(self.coords, self.y, self.X, self.bw, fixed=self.fixed, kernel=self.kernel, family=self.family,offset=self.offset, constant=False,spherical=self.coorType).fit()
+            print("Fitting GWR using optimal bandwidth: ", self.bw)
+            self.results = GWR(self.coords, self.y, self.X, self.bw, fixed=self.fixed, kernel=self.kernel, family=self.family,offset=self.offset, constant=self.constant,spherical=self.coorType).fit()
+            
             
             if self.mcTest != "Off":
-                print("MC Test")
+                print("Starting spatial variability test")
                 self.testMCResults = self.results.spatial_variability(self.selector)
+                
             
             if self.locollinear != "Off":
-                print("Local")
-                print(self.results,self.X.shape,self.y.shape)
                 self.locollinearResults = self.results.local_collinearity()
             
             self.end_t = datetime.now()
@@ -947,31 +984,36 @@ class Ui_Dialog(object):
             """
         
         if self.isMGWR:
-            print ("running MGWR")
-            self.selector = Sel_BW(self.coords, self.y, self.X, fixed=self.fixed,kernel=self.kernel, multi=True,constant=False,spherical=self.coorType)
+            print ("MGWR running...")
+            print ("Backfitting...")
+            self.selector = Sel_BW(self.coords, self.y, self.X, fixed=self.fixed,kernel=self.kernel, multi=True,constant=self.constant,spherical=self.coorType)
             self.bws = self.selector.search(search_method='golden_section',criterion=self.criterion, rss_score=self.rss_score, tol_multi=self.tol_multi)
-            self.results = MGWR(self.coords, self.y, self.X, self.selector, kernel=self.kernel, fixed=self.fixed,constant=False,spherical=self.coorType).fit()
+            self.results = MGWR(self.coords, self.y, self.X, self.selector, kernel=self.kernel, fixed=self.fixed,constant=self.constant,spherical=self.coorType).fit()
             
             if self.mcTest != "Off":
-                print("MGWR MC Test")
                 self.testMCResults = self.results.spatial_variability(self.selector)
             
             if self.locollinear != "Off":
-                print("MGWR Local")
                 self.locollinearResults = self.results.local_collinearity()
             
             self.end_t = datetime.now()
                 
             outputMGWR(self)
+        print("Done!")
+        print("Ended at: ", self.end_t)
 
 
 
-class AThread(QtCore.QThread):
+class GWRThread(QtCore.QThread):
     def __init__(self, Ui_Dialog, parent=None):
         super(QtCore.QThread, self).__init__()
         self.diag = Ui_Dialog
+
     def run(self):
         self.diag.runGWR()
+
+    def stop(self):
+        print("stopping")
 
 
 class timerThread(QtCore.QThread):

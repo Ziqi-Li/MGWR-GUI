@@ -5,12 +5,12 @@
 
 __author__ = "Taylor Oshan Tayoshan@gmail.com"
 
-import mgwrlib.spreg.user_output as USER
+import spreg.user_output as USER
 import numpy as np
 from scipy.spatial.distance import pdist,squareform
 from scipy.optimize import minimize_scalar
-from mgwrlib.spglm.family import Gaussian, Poisson, Binomial
-from mgwrlib.spglm.iwls import iwls,_compute_betas_gwr
+from spglm.family import Gaussian, Poisson, Binomial
+from spglm.iwls import iwls,_compute_betas_gwr
 from .kernels import *
 from .gwr import GWR
 from .search import golden_section, equal_interval, multi_bw
@@ -199,10 +199,11 @@ class Sel_BW(object):
         self._build_dMat()
         self.search_params = {}
 
+
     def search(self, search_method='golden_section', criterion='AICc',
             bw_min=None, bw_max=None, interval=0.0, tol=1.0e-6, max_iter=200,
             init_multi=None, tol_multi=1.0e-5, rss_score=False,
-            max_iter_multi=200, multi_bw_min=[None], multi_bw_max=[None]):
+            max_iter_multi=200, multi_bw_min=[None], multi_bw_max=[None],multiFlag=False):
         """
         Parameters
         ----------
@@ -324,7 +325,7 @@ class Sel_BW(object):
             self.S = self.bw[-2] #(n,n)
             self.R = self.bw[-1] #(n,n,k)
         else:
-            self._bw()
+            self._bw(multiFlag)
 
         return self.bw[0]
     
@@ -337,7 +338,7 @@ class Sel_BW(object):
             self.sorted_dmat = np.sort(self.dmat)
 
 
-    def _bw(self):
+    def _bw(self,multiFlag):
 
         gwr_func = lambda bw: getDiag[self.criterion](GWR(self.coords, self.y, 
             self.X_loc, bw, family=self.family, kernel=self.kernel,
@@ -351,10 +352,11 @@ class Sel_BW(object):
                     self.constant)
             delta = 0.38197 #1 - (np.sqrt(5.0)-1.0)/2.0
             self.bw = golden_section(a, c, delta, gwr_func, self.tol,
-                    self.max_iter, self.int_score)
+                    self.max_iter, self.int_score,multi=multiFlag)
+
         elif self.search_method == 'interval':
             self.bw = equal_interval(self.bw_min, self.bw_max, self.interval,
-                    gwr_func, self.int_score)
+                    gwr_func, self.int_score, multi=multiFlag)
         elif self.search_method == 'scipy':
             self.bw_min, self.bw_max = self._init_section(self.X_glob, self.X_loc,
                     self.coords, self.constant)
@@ -396,7 +398,7 @@ class Sel_BW(object):
                     fixed=fixed, offset=offset, constant=False)
         def sel_func(bw_func, bw_min=None, bw_max=None):
             return bw_func.search(search_method=search_method, criterion=criterion,
-                    bw_min=bw_min, bw_max=bw_max, interval=interval, tol=tol, max_iter=max_iter)
+                    bw_min=bw_min, bw_max=bw_max, interval=interval, tol=tol, max_iter=max_iter,multiFlag=True)
         self.bw = multi_bw(self.init_multi, y, X, n, k, family,
                 self.tol_multi, self.max_iter_multi, self.rss_score, gwr_func,
                 bw_func, sel_func, multi_bw_min, multi_bw_max)

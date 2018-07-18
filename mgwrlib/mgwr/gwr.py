@@ -8,11 +8,11 @@ import numpy.linalg as la
 from scipy.stats import t
 from scipy.special import factorial
 from itertools import combinations as combo
-from mgwrlib.spreg import user_output as USER
-from mgwrlib.spglm.family import Gaussian, Binomial, Poisson
-from mgwrlib.spglm.glm import GLM, GLMResults
-from mgwrlib.spglm.iwls import iwls,_compute_betas_gwr
-from mgwrlib.spglm.utils import cache_readonly
+from spreg import user_output as USER
+from spglm.family import Gaussian, Binomial, Poisson
+from spglm.glm import GLM, GLMResults
+from spglm.iwls import iwls,_compute_betas_gwr
+from spglm.utils import cache_readonly
 from .diagnostics import get_AIC, get_AICc, get_BIC, corr
 from .kernels import *
 from .summary import *
@@ -1130,10 +1130,11 @@ class GWRResults(GLMResults):
         SDs = []
     
         for x in range(n_iters):
+            print("MC iteration:",x,"/1000")
             temp_coords = np.random.permutation(self.model.coords)
             temp_sel.coords = temp_coords
             temp_sel._build_dMat()
-            temp_bw = temp_sel.search(**search_params)
+            temp_bw = temp_sel.search(**search_params,multiFlag=True)
    
             temp_gwr.W = temp_gwr._build_W(fixed, kernel, temp_coords, temp_bw)
             temp_params = temp_gwr.fit(**fit_params).params
