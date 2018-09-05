@@ -4,6 +4,16 @@ from spglm.glm import GLM
 from .diagnostics import get_AICc
 
 
+def summaryAbout(self):
+    summary = '=' * 80 + '\n'
+    summary += 'MGWR Version: 1.0\n'
+    summary += 'Released on 05/09/2019\n'
+    summary += 'Source code is available at: https://github.com/pysal/mgwr\n'
+    summary += 'Spatial Analysis Research Center (SPARC)\n'
+    summary += 'Arizona State University, Tempe, USA\n'
+    return summary
+
+
 def summaryModel(self,diag):
     summary = '=' * 80 + '\n'
     summary += "%-60s %19s\n" % ('Model type', self.family.__class__.__name__)
@@ -32,7 +42,7 @@ def summaryGLM(self,diag):
         summary += "%-67s %12.3f\n" %  ('Log-likelihood:', glm_rslt.llf)
         summary += "%-67s %12.3f\n" %  ('AIC:', glm_rslt.aic)
         summary += "%-67s %12.3f\n" %  ('AICc:', get_AICc(glm_rslt))
-        summary += "%-67s %12.3f\n" %  ('BIC:', glm_rslt.bic)
+        #summary += "%-67s %12.3f\n" %  ('BIC:', glm_rslt.bic)
         summary += "%-67s %12.3f\n" %  ('R2:', glm_rslt.D2)
         summary += "%-67s %12.3f\n\n" % ('Adj. R2:', glm_rslt.adj_D2)
     else:
@@ -40,7 +50,7 @@ def summaryGLM(self,diag):
         summary += "%-67s %12.3f\n" %  ('Log-likelihood:', glm_rslt.llf)
         summary += "%-67s %12.3f\n" %  ('AIC:', glm_rslt.aic)
         summary += "%-67s %12.3f\n" %  ('AICc:', get_AICc(glm_rslt))
-        summary += "%-67s %12.3f\n" %  ('BIC:', glm_rslt.bic)
+        #summary += "%-67s %12.3f\n" %  ('BIC:', glm_rslt.bic)
         summary += "%-67s %12.3f\n" %  ('Percent deviance explained:', glm_rslt.D2)
         summary += "%-67s %12.3f\n\n" % ('Adj. percent deviance explained:', glm_rslt.adj_D2)
     
@@ -62,11 +72,11 @@ def summaryGWR(self,diag):
         summary += "%-59s %20s\n" % ('Coordinates type:', 'Projected')
     
     if self.model.fixed:
-        summary += "%-55s %20s\n" % ('Spatial kernel:', 'Fixed ' + self.model.kernel)
+        summary += "%-59s %20s\n" % ('Spatial kernel:', 'Fixed ' + self.model.kernel)
     else:
         summary += "%-59s %20s\n" % ('Spatial kernel:', 'Adaptive ' + self.model.kernel)
         
-    summary += "%-59s %20s\n" % ('Criterion for optimal bandwidth:', self.model.criterion)
+    summary += "%-59s %20s\n" % ('Criterion for optimal bandwidth:', diag.criterion)
     summary += "%-67s %12.3f\n" % ('Bandwidth used:', self.model.bw)
 
     summary += "\n%s\n" % ('Diagnostic Information')

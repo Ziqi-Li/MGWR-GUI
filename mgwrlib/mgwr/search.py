@@ -59,7 +59,7 @@ def golden_section(a, c, delta, function, tol, max_iter, int_score=False, multi=
         else:
             score_b = function(b)
             if multi == False:
-                print("Bandwidth: ",np.round(b, 2), ", score: ", "{0:.2f}".format(score_b[0]))
+                print("Bandwidth: ",np.round(b, 2), ", score: ", "{0:.2f}".format(np.array(score_b).flatten()[0]))
             dict[b] = score_b
         
         if d in dict:
@@ -67,7 +67,7 @@ def golden_section(a, c, delta, function, tol, max_iter, int_score=False, multi=
         else:
             score_d = function(d)
             if multi == False:
-                print("Bandwidth: ",np.round(d, 2), ", score: ", "{0:.2f}".format(score_d[0]))
+                print("Bandwidth: ",np.round(d, 2), ", score: ", "{0:.2f}".format(np.array(score_d).flatten()[0]))
             dict[d] = score_d
 
         if score_b <= score_d:
@@ -134,10 +134,10 @@ def equal_interval(l_bound, u_bound, interval, function, int_score=False,multi=T
 
     score_a = function(a)
     if multi == False:
-        print("Bandwidth:",a,", score:", "{0:.2f}".format(score_a[0]))
+        print("Bandwidth:",a,", score:", "{0:.2f}".format(np.array(score_a).flatten()[0]))
     score_c = function(c)
     if multi == False:
-        print("Bandwidth:",c,", score:", "{0:.2f}".format(score_c[0]))
+        print("Bandwidth:",c,", score:", "{0:.2f}".format(np.array(score_c).flatten()[0]))
 
     output.append((a,score_a))
     output.append((c,score_c))
@@ -151,7 +151,7 @@ def equal_interval(l_bound, u_bound, interval, function, int_score=False,multi=T
 
     while b < c:
         score_b = function(b)
-        print("Bandwidth:",b,", score:", "{0:.2f}".format(score_b[0]))
+        print("Bandwidth:",b,", score:", "{0:.2f}".format(np.array(score_b).flatten()[0]))
         output.append((b,score_b))
 
         if score_b < opt_score:
@@ -248,10 +248,11 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
         BWs.append(copy.deepcopy(bws))
         VALs.append(copy.deepcopy(vals))
         FUNCs.append(copy.deepcopy(funcs))
+
+        print("Current iteration:",iters,",SOC:", np.round(score,7))
+        print("Bandwidths:", ', '.join([str(bw) for bw in bws]))
         if delta < tol:
             break
-
-        print("Current iteration:",iters,", score:", np.round(score,7))
 
     opt_bws = BWs[-1]
     return (opt_bws, np.array(BWs),

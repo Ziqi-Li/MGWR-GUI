@@ -25,12 +25,12 @@ def outputMGWR(self):
     #saveProcessToCSVMGWR(self)
 
 def saveSummaryGWR(self):
-    summary = summaryModel(self.results,self) + summaryGLM(self.results,self) + summaryGWR(self.results,self)
+    summary = summaryAbout(self) + summaryModel(self.results,self) + summaryGLM(self.results,self) + summaryGWR(self.results,self)
     with open(self.sumFileSavePath.text(), "w") as text_file:
         print(summary, file=text_file)
 
 def saveSummaryMGWR(self):
-    summary = summaryModel(self.results,self) + summaryGLM(self.results,self) + summaryMGWR(self.results,self)
+    summary = summaryAbout(self) + summaryModel(self.results,self) + summaryGLM(self.results,self) + summaryMGWR(self.results,self)
     with open(self.sumFileSavePath.text(), "w") as text_file:
         print(summary, file=text_file)
 
@@ -45,8 +45,9 @@ def saveBetasToCSVMGWR(self):
     resultsDF.columns = ['GeoID','x_coor','y_coor','y','yhat','residual'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
     
     if self.locollinear != "Off":
-        resultsDF = pd.concat([pd.DataFrame,pd.DataFrame(np.column_stack(self.locollinearResults[-2],self.locollinearResults[-1]))])
-        resultsDF.columns += ['local_CN'] + ['local_vdp_'+ x for x in self.XNames]
+        old_columns = resultsDF.columns
+        resultsDF = pd.concat([resultsDF,pd.DataFrame(np.column_stack([self.locollinearResults[-2],self.locollinearResults[-1]]))],axis=1)
+        resultsDF.columns = list(old_columns) + ['local_CN'] + ['local_vdp_'+ x for x in self.XNames]
     
     resultsDF.to_csv(self.betaFileSavePath.text(),sep=',',index=False)
 
@@ -59,8 +60,9 @@ def saveBetasToCSVGWR(self):
         resultsDF.columns = ['GeoID','x_coor','y_coor','y','yhat','residual','pDev','influ','CooksD'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
 
     if self.locollinear != "Off":
-        resultsDF = pd.concat([pd.DataFrame,pd.DataFrame(np.column_stack(self.locollinearResults[-2],self.locollinearResults[-1]))])
-        resultsDF.columns += ['local_CN'] + ['local_vdp_'+ x for x in self.XNames]
+        old_columns = resultsDF.columns
+        resultsDF = pd.concat([resultsDF,pd.DataFrame(np.column_stack([self.locollinearResults[-2],self.locollinearResults[-1]]))],axis=1)
+        resultsDF.columns = list(old_columns) + ['local_CN'] + ['local_vdp_'+ x for x in self.XNames]
 
 
     resultsDF.to_csv(self.betaFileSavePath.text(),sep=',',index=False)

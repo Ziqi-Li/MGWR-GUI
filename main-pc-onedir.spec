@@ -25,11 +25,13 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=True )
+          console=False,
+		  icon='resources/img/MGWR-pc.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
                a.datas,
                strip=False,
                upx=True,
-               name='main')
+               name='main'
+			   )

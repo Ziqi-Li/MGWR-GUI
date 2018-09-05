@@ -548,6 +548,7 @@ class Ui_Dialog(object):
                 self.localList.clear()
                 self.localList.addItem('Intercept')
                 self.variableList.clear()
+                self.OffsetLabel.clear()
                 self.idLabel.clear()
                 self.xCoorLabel.clear()
                 self.yCoorLabel.clear()
@@ -635,7 +636,7 @@ class Ui_Dialog(object):
             self.deGreyOutLineEdit(self.bwMin)
             self.deGreyOutLineEdit(self.bwMax)
         #defined
-        elif index == 2:
+        elif index == 2 and self.isGWR:
             self.removeRed(self.bwMin)
             self.removeRed(self.bwMax)
             self.removeRed(self.bwInterval)
@@ -678,9 +679,10 @@ class Ui_Dialog(object):
         
         self.gridLayout_5.addWidget(self.groupBox_12, 0, 1, 1, 1)
         
+        self.bwDropdown.addItem("Pre-defined bandwidth")
+        
         self.isGWR = True
         self.isMGWR = False
-
     
     def mgwrMode(self):
         #self.predictionBox.setEnabled(False)
@@ -688,6 +690,7 @@ class Ui_Dialog(object):
         
         self.modelTypeDropdown.clear()
         self.modelTypeDropdown.addItem("Gaussian")
+        self.bwDropdown.removeItem(2)
         
         self.isMGWR = True
         self.isGWR = False
@@ -750,6 +753,7 @@ class Ui_Dialog(object):
             allSet = False
         if not self.localList.count():
             self.localList.setStyleSheet("QListWidget{border: 2px solid red;}")
+            allSet = False
         
         if self.bwDropdown.currentText() == "Interval Search":
             if not self.bwMin.text():
@@ -766,12 +770,11 @@ class Ui_Dialog(object):
                 self.bwPreDefined.setStyleSheet("border: 2px solid red;")
                 allSet = False
 
-
         return allSet
 
             
     def loadDataModel(self):
-        if 1==1:
+        try:
         #Load Variables
             self.id = self.data[[self.idLabel.text()]]
             self.data['Intercept'] = 1
@@ -864,19 +867,22 @@ class Ui_Dialog(object):
             else:
                 self.rss_score = True
         
-        return True
-        
-    
+            return True
+                
+        except:
+            return False
+            
     def run_onclick(self):
         
         if not self.preCheckEmptyFields():
-            err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Please fix inputs in red!")
+            err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Please fix inputs in red.")
             return
         
         if not self.loadDataModel():
-            err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Something wrong when loading variables to model. Please double check you data. No Missing values allowed.")
+            err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Something wrong when loading variables to model.")
             return
         
+        print("haha")
         self.threadRunning = True
         self.thread.start()
 
@@ -910,8 +916,11 @@ class Ui_Dialog(object):
         self.timer.stop()
         self.threadRunning = False
         #self.runningDialog.close()
+        if not self.success:
+            err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Something went wrong during model calibration. Please double check your settings and data.")
+            return
+                
         msg = QtWidgets.QMessageBox.information(None, "Success", "Running complete!\nTime Elapsed:\n" + self.elapsedTimeFormatter(self.time))
-        
         summaryDlg = QtWidgets.QDialog()
         smyui = Ui_summaryDlg()
         smyui.setupUi(summaryDlg)
@@ -924,84 +933,64 @@ class Ui_Dialog(object):
     #Run model
     def runGWR(self):
         self.begin_t = datetime.now()
-        #self.GLMResult = GLM(self.y,self.X).fit()
-        if self.isGWR:
-            print("Started at: ", self.begin_t)
-            print ("Running GWR...")
-            self.selector = Sel_BW(self.coords,self.y,self.X,kernel=self.kernel,fixed=self.fixed,family=self.family, offset=self.offset,constant=self.constant,spherical=self.coorType)
-            if self.search == 'golden_section':
-                print("Golden section search minimizing", self.criterion)
-                self.bw = self.selector.search(search_method='golden_section',criterion=self.criterion)
+        print("Started at: ", str(self.begin_t).split('.', 2)[0])
+        try:
+            if self.isGWR:
+                print ("Running GWR...")
+                self.selector = Sel_BW(self.coords,self.y,self.X,kernel=self.kernel,fixed=self.fixed,family=self.family, offset=self.offset,constant=self.constant,spherical=self.coorType)
+                if self.search == 'golden_section':
+                    print("Golden section search minimizing", self.criterion)
+                    self.bw = self.selector.search(search_method='golden_section',criterion=self.criterion)
             
-            elif self.search == 'interval':
-                print("Interval bandwidth searching:")
-                min = int(self.bwMin.text())
-                max = int(self.bwMax.text())
-                step = int(self.bwInterval.text())
-                self.bw = self.selector.search(search_method='interval',bw_min=min,bw_max=max,interval=step,criterion=self.criterion)
+                elif self.search == 'interval':
+                    print("Interval bandwidth searching:")
+                    min = int(self.bwMin.text())
+                    max = int(self.bwMax.text())
+                    step = int(self.bwInterval.text())
+                    self.bw = self.selector.search(search_method='interval',bw_min=min,bw_max=max,interval=step,criterion=self.criterion)
                 
-            else:
-                self.bw = int(self.bwPreDefined.text())
+                else:
+                    self.bw = int(self.bwPreDefined.text())
             
-            print("Fitting GWR using optimal bandwidth: ", self.bw)
-            self.results = GWR(self.coords, self.y, self.X, self.bw, fixed=self.fixed, kernel=self.kernel, family=self.family,offset=self.offset, constant=self.constant,spherical=self.coorType).fit()
+                print("Fitting GWR using optimal bandwidth: ", self.bw)
+                self.results = GWR(self.coords, self.y, self.X, self.bw, fixed=self.fixed, kernel=self.kernel, family=self.family,offset=self.offset, constant=self.constant,spherical=self.coorType).fit()
             
-            
-            if self.mcTest != "Off":
-                print("Starting spatial variability test")
-                self.testMCResults = self.results.spatial_variability(self.selector)
-                
-            
-            if self.locollinear != "Off":
-                self.locollinearResults = self.results.local_collinearity()
-            
-            self.end_t = datetime.now()
-            outputGWR(self)
-            
-            """
-            try:
-                '''
-                __init__(self, coords, y, X_loc, X_glob=None, family=Gaussian(),
-                offset=None, kernel='bisquare', fixed=False, multi=False, constant=True)
-                '''
-                bw = Sel_BW(self.coords, self.y, self.X, kernel=self.kernel, fixed=self.fixed, constant = False)
-            
-                '''
-                search(self, search='golden_section', criterion='AICc', bw_min=0.0,
-                bw_max=0.0, interval=0.0, tol=1.0e-6, max_iter=200, init_multi=True,
-                tol_multi=1.0e-5, rss_score=False, max_iter_multi=200)
-                    '''
-                bw = bw.search(search=self.search, criterion=self.criterion)
-            
-                self.results = GWR(self.coords, self.y, self.X, bw, fixed=self.fixed, kernel=self.kernel, constant = False).fit()
-                self.saveBetasToCSVGWR(self.results)
-                self.end_t = datetime.now()
-                summaryGWR(self)
-            except:
-                error_dialog = QtWidgets.QErrorMessage()
-                error_dialog.showMessage('Something went wrong when running GWR Model. Please double check your settings and data.')
-                error_dialog.exec_()
-            """
-        
-        if self.isMGWR:
-            print ("MGWR running...")
-            print ("Backfitting...")
-            self.selector = Sel_BW(self.coords, self.y, self.X, fixed=self.fixed,kernel=self.kernel, multi=True,constant=self.constant,spherical=self.coorType)
-            self.bws = self.selector.search(search_method='golden_section',criterion=self.criterion, rss_score=self.rss_score, tol_multi=self.tol_multi)
-            self.results = MGWR(self.coords, self.y, self.X, self.selector, kernel=self.kernel, fixed=self.fixed,constant=self.constant,spherical=self.coorType).fit()
-            
-            if self.mcTest != "Off":
-                self.testMCResults = self.results.spatial_variability(self.selector)
-            
-            if self.locollinear != "Off":
-                self.locollinearResults = self.results.local_collinearity()
-            
-            self.end_t = datetime.now()
-                
-            outputMGWR(self)
-        print("Done!")
-        print("Ended at: ", self.end_t)
+                if self.mcTest != "Off":
+                    print("Starting spatial variability test")
+                    self.testMCResults = self.results.spatial_variability(self.selector)
 
+                if self.locollinear != "Off":
+                    self.locollinearResults = self.results.local_collinearity()
+                
+                self.end_t = datetime.now()
+                outputGWR(self)
+            
+            if self.isMGWR:
+                print ("MGWR running...")
+                print ("Backfitting...")
+                self.selector = Sel_BW(self.coords, self.y, self.X, fixed=self.fixed,kernel=self.kernel, multi=True,constant=self.constant,spherical=self.coorType)
+                self.bws = self.selector.search(search_method='golden_section',criterion=self.criterion, rss_score=self.rss_score, tol_multi=self.tol_multi)
+                self.results = MGWR(self.coords, self.y, self.X, self.selector, kernel=self.kernel, fixed=self.fixed,constant=self.constant,spherical=self.coorType).fit()
+            
+                if self.mcTest != "Off":
+                    self.testMCResults = self.results.spatial_variability(self.selector)
+            
+                if self.locollinear != "Off":
+                    self.locollinearResults = self.results.local_collinearity()
+                
+                self.end_t = datetime.now()
+                outputMGWR(self)
+                    
+            print("Done!")
+            print("Ended at: ", str(self.end_t).split('.', 2)[0])
+            self.success = True
+                
+        except:
+            self.end_t = datetime.now()
+            print("Error!")
+            print("Ended at: ", str(self.end_t).split('.', 2)[0])
+            self.success = False
+            return
 
 
 class GWRThread(QtCore.QThread):

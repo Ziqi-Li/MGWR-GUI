@@ -1,64 +1,53 @@
 ================================================================================
-Model type                                                              Gaussian
+Model type                                                               Poisson
 Number of observations:                                                      159
 Number of missing rows:                                                        0
 Number of covariates:                                                          4
 Dependent variable:                                                      PctBach
-Variable standardization:                                                     On
-Total runtime:                                                           0:00:03
+Total runtime:                                                           0:00:00
 
 Global Regression Results
 --------------------------------------------------------------------------------
-Residual sum of squares:                                                  77.203
-Log-likelihood:                                                         -168.175
-AIC:                                                                     344.351
-AICc:                                                                    346.743
-BIC:                                                                    -708.477
-R2:                                                                        0.514
-Adj. R2:                                                                   0.505
+Deviance:                                                                181.024
+Log-likelihood:                                                         -420.514
+AIC:                                                                     849.028
+AICc:                                                                    189.284
+BIC:                                                                    -604.656
+Percent deviance explained:                                                0.523
+Adj. percent deviance explained:                                           0.513
 
 Variable                                   Est.         SE  t(Est/SE)    p-value
 ------------------------------------ ---------- ---------- ---------- ----------
-Intercept                                 0.000      0.056      0.000      1.000
-PctFB                                     0.570      0.061      9.414      0.000
-PctPov                                   -0.394      0.089     -4.440      0.000
-PctBlack                                  0.245      0.084      2.898      0.004
+Intercept                                 2.510      0.082     30.589      0.000
+PctFB                                     0.165      0.017      9.930      0.000
+PctPov                                   -0.026      0.005     -5.131      0.000
+PctBlack                                  0.006      0.002      2.820      0.005
 
-Multi-Scale Geographically Weighted Regression (MGWR) Results
+Geographically Weighted Regression (GWR) Results
 --------------------------------------------------------------------------------
 Coordinates type:                                                      Projected
 Spatial kernel:                                                Adaptive bisquare
 Criterion for optimal bandwidth:                                            AICc
-Score of change (SOC) type:                                          Smoothing f
-Termination criterion for MGWR:                                          1.0e-05
-Number of iterations used:                                                    11
-
-MGWR bandwidths
---------------------------------------------------------------------------------
-Variable                  Bandwidth      ENP_j   Adj t-val(95%)   Adj alpha(95%)
-Intercept                   157.000      1.682            2.194            0.030
-PctFB                       101.000      3.575            2.485            0.014
-PctPov                      157.000      1.537            2.157            0.033
-PctBlack                    127.000      2.518            2.353            0.020
+Bandwidth used:                                                          137.000
 
 Diagnostic Information
 --------------------------------------------------------------------------------
-Residual sum of squares:                                                  59.673
-Effective number of parameters (trace(S)):                                 9.311
-Degree of freedom (n - trace(S)):                                        149.689
-Sigma estimate:                                                            0.631
-Log-likelihood:                                                         -147.699
-AIC:                                                                     316.020
-AICc:                                                                    317.600
-BIC:                                                                     347.665
+Effective number of parameters (trace(S)):                                 8.738
+Degree of freedom (n - trace(S)):                                        150.262
+Log-likelihood:                                                         -405.384
+AIC:                                                                     168.240
+AICc:                                                                    169.380
+BIC:                                                                     195.056
+Adj. alpha (95%):                                                          0.023
+Adj. critical t value (95%):                                               2.298
 
-Summary Statistics For MGWR Parameter Estimates
+Summary Statistics For GWR Parameter Estimates
 --------------------------------------------------------------------------------
 Variable                        Mean        STD        Min     Median        Max
 --------------------      ---------- ---------- ---------- ---------- ----------
-Intercept                      0.005      0.036     -0.065      0.014      0.062
-PctFB                          0.594      0.254      0.190      0.629      0.890
-PctPov                        -0.264      0.018     -0.294     -0.264     -0.234
-PctBlack                       0.138      0.060      0.040      0.124      0.252
+Intercept                      2.441      0.083      2.313      2.443      2.585
+PctFB                          0.176      0.046      0.091      0.194      0.250
+PctPov                        -0.020      0.009     -0.036     -0.017     -0.007
+PctBlack                       0.004      0.004     -0.003      0.002      0.012
 ================================================================================
 
