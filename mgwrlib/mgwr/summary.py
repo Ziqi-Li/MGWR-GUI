@@ -7,7 +7,7 @@ from .diagnostics import get_AICc
 def summaryAbout(self):
     summary = '=' * 80 + '\n'
     summary += 'MGWR Version: 1.0\n'
-    summary += 'Released on 05/09/2019\n'
+    summary += 'Released on 09/05/2018\n'
     summary += 'Source code is available at: https://github.com/pysal/mgwr\n'
     summary += 'Spatial Analysis Research Center (SPARC)\n'
     summary += 'Arizona State University, Tempe, USA\n'
