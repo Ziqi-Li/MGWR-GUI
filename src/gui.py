@@ -238,6 +238,7 @@ class Ui_Dialog(object):
         self.gridLayout_4.addWidget(self.label, 0, 0, 1, 1)
         self.idLabel = QtWidgets.QLineEdit(self.gridLayoutWidget_4)
         self.idLabel.setText("")
+        self.idLabel.setPlaceholderText("(optional)")
         self.idLabel.setDragEnabled(True)
         self.idLabel.setReadOnly(True)
         self.idLabel.setObjectName("idLabel")
@@ -742,9 +743,6 @@ class Ui_Dialog(object):
         if not self.responseLabel.text():
             self.responseLabel.setStyleSheet("border: 2px solid red;")
             allSet = False
-        if not self.idLabel.text():
-            self.idLabel.setStyleSheet("border: 2px solid red;")
-            allSet = False
         if not self.xCoorLabel.text():
             self.xCoorLabel.setStyleSheet("border: 2px solid red;")
             allSet = False
@@ -776,7 +774,13 @@ class Ui_Dialog(object):
     def loadDataModel(self):
         try:
         #Load Variables
-            self.id = self.data[[self.idLabel.text()]]
+            if self.idLabel.text():
+                self.id = self.data[[self.idLabel.text()]]
+                self.idName = self.idLabel.text()
+            else:
+                self.id = pd.Series(np.arange(self.data.shape[0]))
+                self.idName = "id"
+            
             self.data['Intercept'] = 1
             self.yName = self.responseLabel.text()
             self.XNames =  [str(self.localList.item(i).text()) for i in range(self.localList.count())]
@@ -794,7 +798,13 @@ class Ui_Dialog(object):
             self.yCoor = self.data[[self.yCoorLabel.text()]]
             self.comp_data = pd.concat([self.id,self.y, self.X, self.xCoor,self.yCoor],axis=1).dropna()
             #self.comp_data = self.comp_data[self.comp_data.applymap(np.isreal).all(1)]
-            self.id = self.comp_data[[self.idLabel.text()]].values.reshape(-1,1)
+            
+            if self.idLabel.text():
+                self.id = self.comp_data[[self.idLabel.text()]].values.reshape(-1,1)
+            else:
+                self.id = pd.Series(np.arange(self.comp_data.shape[0]))
+            
+            
             self.y = self.comp_data[[self.responseLabel.text()]].values.reshape(-1,1)
             self.X = self.comp_data.ix[:,2:-2].values
             self.xCoor = self.comp_data.ix[:,-2]
@@ -840,10 +850,17 @@ class Ui_Dialog(object):
             
             
             #MGWR Advanced Settings
-            self.varSTD = self.advMGWRUI.varSTD
-            if self.varSTD == 'On' and self.isMGWR:
+            self.MGWRVarSTD = self.advMGWRUI.varSTD
+            self.GWRVarSTD = self.advGWRUI.varSTD
+
+            if self.MGWRVarSTD == 'On' and self.isMGWR:
                 self.X = (self.X - np.mean(self.X, axis=0)) / np.std(self.X, axis=0)
                 self.y = (self.y - np.mean(self.y, axis=0)) / np.std(self.y, axis=0)
+
+            if self.GWRVarSTD == 'On' and self.isGWR:
+                self.X = (self.X - np.mean(self.X, axis=0)) / np.std(self.X, axis=0)
+                self.y = (self.y - np.mean(self.y, axis=0)) / np.std(self.y, axis=0)
+
     
             self.SOC = self.advMGWRUI.soc
             self.initBeta = self.advMGWRUI.init

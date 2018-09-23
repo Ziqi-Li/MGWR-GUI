@@ -3,30 +3,31 @@ from spglm.family import Gaussian, Binomial, Poisson
 from spglm.glm import GLM
 from .diagnostics import get_AICc
 
-
 def summaryAbout(self):
     summary = '=' * 80 + '\n'
     summary += 'MGWR Version: 1.0\n'
-    summary += 'Released on 09/05/2018\n'
+    summary += 'Released on: 09/14/2018\n'
     summary += 'Source code is available at: https://github.com/pysal/mgwr\n'
+    summary += 'Development Team: Ziqi Li, Taylor Oshan, Stewart Fotheringham, Wei Kang, \n'
+    summary += 'Levi Wolf, Hanchen Yu and Wei Luo\n'
     summary += 'Spatial Analysis Research Center (SPARC)\n'
     summary += 'Arizona State University, Tempe, USA\n'
     return summary
 
-
 def summaryModel(self,diag):
     summary = '=' * 80 + '\n'
-    summary += "%-60s %19s\n" % ('Model type', self.family.__class__.__name__)
+    summary += "%-60s %19s\n" % ('Model type:', self.family.__class__.__name__)
     summary += "%-65s %14d\n" % ('Number of observations:', self.n)
-    summary += "%-65s %14d\n" % ('Number of missing rows:', diag.nMiss)
+    #summary += "%-65s %14d\n" % ('Number of missing rows:', diag.nMiss)
     summary += "%-65s %14d\n" % ('Number of covariates:', self.k)
     summary += "%-65s %14s\n" % ('Dependent variable:', diag.yName)
     if (diag.offset is not None):
         summary += "%-65s %14s\n" % ('Offset variable:', diag.OffsetLabel.text())
-    if diag.isMGWR and diag.varSTD:
-        summary += "%-65s %14s\n" % ('Variable standardization:', 'On')
-    elif diag.isMGWR and diag.varSTD:
-        summary += "%-65s %14s\n" % ('Variable standardization:', 'Off')
+    if diag.isMGWR and diag.MGWRVarSTD:
+        summary += "%-65s %14s\n" % ('Variable standardization:', diag.MGWRVarSTD)
+    elif diag.isGWR and diag.GWRVarSTD:
+        summary += "%-65s %14s\n" % ('Variable standardization:', diag.GWRVarSTD)
+
     summary += "%-65s %14s\n\n" % ('Total runtime:', str(diag.end_t - diag.begin_t).split('.', 2)[0])
     return summary
 
@@ -180,6 +181,7 @@ def summaryMGWR(self,diag):
     summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
     summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
     summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
+    summary += "%-67s %12.3f\n" % ('R2:', self.R2)
 
     summary += "\n%s\n" % ('Summary Statistics For MGWR Parameter Estimates')
     summary += '-' * 80 + '\n'
@@ -191,5 +193,10 @@ def summaryMGWR(self,diag):
     summary += '=' * 80 + '\n'
     return summary
 
+def summaryACK(self):
+    summary = 'Acknowledgement:\n'
+    summary += 'We acknowledge the support of the National Science Foundation under Award 1758786 \nfrom the Geography and Spatial Sciences Program to A. S. Fotheringham which \nenabled this software to be written and made freely available.\n'
+    summary += '=' * 80 + '\n'
+    return summary
 
 

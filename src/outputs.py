@@ -25,12 +25,12 @@ def outputMGWR(self):
     #saveProcessToCSVMGWR(self)
 
 def saveSummaryGWR(self):
-    summary = summaryAbout(self) + summaryModel(self.results,self) + summaryGLM(self.results,self) + summaryGWR(self.results,self)
+    summary = summaryAbout(self) + summaryModel(self.results,self) + summaryGLM(self.results,self) + summaryGWR(self.results,self) + summaryACK(self)
     with open(self.sumFileSavePath.text(), "w") as text_file:
         print(summary, file=text_file)
 
 def saveSummaryMGWR(self):
-    summary = summaryAbout(self) + summaryModel(self.results,self) + summaryGLM(self.results,self) + summaryMGWR(self.results,self)
+    summary = summaryAbout(self) + summaryModel(self.results,self) + summaryGLM(self.results,self) + summaryMGWR(self.results,self) + summaryACK(self)
     with open(self.sumFileSavePath.text(), "w") as text_file:
         print(summary, file=text_file)
 
@@ -42,7 +42,7 @@ def saveProcessToCSVMGWR(self):
 
 def saveBetasToCSVMGWR(self):
     resultsDF = pd.DataFrame(np.column_stack((self.id,self.xCoor,self.yCoor,self.y,self.results.predy,self.results.resid_response,self.results.params,self.results.bse,self.results.tvalues)))
-    resultsDF.columns = ['GeoID','x_coor','y_coor','y','yhat','residual'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
+    resultsDF.columns = [self.idName] + ['x_coor','y_coor','y','yhat','residual'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
     
     if self.locollinear != "Off":
         old_columns = resultsDF.columns
@@ -54,10 +54,10 @@ def saveBetasToCSVMGWR(self):
 def saveBetasToCSVGWR(self):
     if isinstance(self.family, Gaussian):
         resultsDF = pd.DataFrame(np.column_stack((self.id,self.xCoor,self.yCoor,self.y,self.results.predy,self.results.resid_response,self.results.localR2,self.results.influ,self.results.cooksD,self.results.params,self.results.bse,self.results.tvalues)))
-        resultsDF.columns = ['GeoID','x_coor','y_coor','y','yhat','residual','localR2','influ','CooksD'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
+        resultsDF.columns = [self.idName] + ['x_coor','y_coor','y','yhat','residual','localR2','influ','CooksD'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
     else:
         resultsDF = pd.DataFrame(np.column_stack((self.id,self.xCoor,self.yCoor,self.y,self.results.predy,self.results.resid_response,self.results.pDev,self.results.influ,self.results.cooksD,self.results.params,self.results.bse,self.results.tvalues)))
-        resultsDF.columns = ['GeoID','x_coor','y_coor','y','yhat','residual','pDev','influ','CooksD'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
+        resultsDF.columns = [self.idName] + ['x_coor','y_coor','y','yhat','residual','pDev','influ','CooksD'] + ['beta_'+ x for x in self.XNames] + ['se_'+ x for x in self.XNames] + ['t_'+ x for x in self.XNames]
 
     if self.locollinear != "Off":
         old_columns = resultsDF.columns
