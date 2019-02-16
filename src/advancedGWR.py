@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'advanced.ui'
+# Form implementation generated from reading ui file 'advOptGWR.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,10 +12,10 @@ class Ui_advGWRDialog(object):
     def setupUi(self, advDialog):
         advDialog.setObjectName("advDialog")
         advDialog.setWindowModality(QtCore.Qt.WindowModal)
-        advDialog.resize(372, 170)
+        advDialog.resize(385, 221)
         advDialog.setModal(True)
         self.applyBTN = QtWidgets.QPushButton(advDialog)
-        self.applyBTN.setGeometry(QtCore.QRect(250, 20, 110, 32))
+        self.applyBTN.setGeometry(QtCore.QRect(250, 20, 110, 31))
         self.applyBTN.setObjectName("applyBTN")
         self.resetBTN = QtWidgets.QPushButton(advDialog)
         self.resetBTN.setGeometry(QtCore.QRect(250, 60, 110, 32))
@@ -44,17 +44,26 @@ class Ui_advGWRDialog(object):
         self.varSTDComboBox.setObjectName("varSTDComboBox")
         self.varSTDComboBox.addItem("")
         self.varSTDComboBox.addItem("")
-		
+        self.groupBox_6 = QtWidgets.QGroupBox(advDialog)
+        self.groupBox_6.setGeometry(QtCore.QRect(10, 160, 221, 51))
+        self.groupBox_6.setObjectName("groupBox_6")
+        self.mccComboBox = QtWidgets.QComboBox(self.groupBox_6)
+        self.mccComboBox.setGeometry(QtCore.QRect(10, 20, 201, 21))
+        self.mccComboBox.setObjectName("mccComboBox")
+        self.mccComboBox.addItem("")
+        self.mccComboBox.addItem("")
+        self.mccComboBox.addItem("")
+        self.mccComboBox.addItem("")
         
         self.advDialog = advDialog
         self.mcTest = "Off"
         self.varSTD = "On"
         self.locollinear = "Off"
-        		
-		
+        self.mcc = "None"
+        
         self.retranslateUi(advDialog)
         QtCore.QMetaObject.connectSlotsByName(advDialog)
-
+    
     def retranslateUi(self, advDialog):
         _translate = QtCore.QCoreApplication.translate
         advDialog.setWindowTitle(_translate("advDialog", "Advanced Options"))
@@ -69,6 +78,11 @@ class Ui_advGWRDialog(object):
         self.SOCBox_2.setTitle(_translate("advDialog", "Variable standardization"))
         self.varSTDComboBox.setItemText(0, _translate("advDialog", "On"))
         self.varSTDComboBox.setItemText(1, _translate("advDialog", "Off"))
+        self.groupBox_6.setTitle(_translate("advDialog", "Multiple comparison correction"))
+        self.mccComboBox.setItemText(0, _translate("advDialog", "None"))
+        self.mccComboBox.setItemText(1, _translate("advDialog", "Bonferroni"))
+        self.mccComboBox.setItemText(2, _translate("advDialog", "Sidak"))
+        self.mccComboBox.setItemText(3, _translate("advDialog", "FDR"))
 
     
     def loadSettings(self):
@@ -88,6 +102,15 @@ class Ui_advGWRDialog(object):
         else:
             self.varSTDComboBox.setCurrentIndex(1)
 
+        if self.mcc == "None":
+            self.mccComboBox.setCurrentIndex(0)
+        elif self.mcc == "Bonferroni":
+            self.mccComboBox.setCurrentIndex(1)
+        elif self.mcc == "Sidak":
+            self.mccComboBox.setCurrentIndex(2)
+        elif self.mcc == "FDR":
+            self.mccComboBox.setCurrentIndex(3)
+            
 
     def addActionsToUI(self):
         self.applyBTN.clicked.connect(self.applyOnClick)
@@ -97,11 +120,13 @@ class Ui_advGWRDialog(object):
         self.varSTD = self.varSTDComboBox.currentText()
         self.locollinear = self.locollinearComboBox.currentText()
         self.mcTest = self.mcComboBox.currentText()
+        self.mcc = self.mccComboBox.currentText()
         self.advDialog.close()
     
     def resetOnClick(self):
         self.varSTDComboBox.setCurrentIndex(0)
         self.locollinearComboBox.setCurrentIndex(0)
         self.mcComboBox.setCurrentIndex(0)
+        self.mccComboBox.setCurrentIndex(0)
 
 

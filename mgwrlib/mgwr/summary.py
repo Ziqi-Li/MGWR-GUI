@@ -5,11 +5,11 @@ from .diagnostics import get_AICc
 
 def summaryAbout(self):
     summary = '=' * 80 + '\n'
-    summary += 'MGWR Version: 1.0\n'
-    summary += 'Released on: 09/14/2018\n'
+    summary += 'MGWR Version: 1.0.1\n'
+    summary += 'Released on: 11/04/2018\n'
     summary += 'Source code is available at: https://github.com/pysal/mgwr\n'
     summary += 'Development Team: Ziqi Li, Taylor Oshan, Stewart Fotheringham, Wei Kang, \n'
-    summary += 'Levi Wolf, Hanchen Yu and Wei Luo\n'
+    summary += 'Levi Wolf, Hanchen Yu, Wei Luo, and Mehak Sachdeva\n'
     summary += 'Spatial Analysis Research Center (SPARC)\n'
     summary += 'Arizona State University, Tempe, USA\n'
     return summary
@@ -76,8 +76,9 @@ def summaryGWR(self,diag):
         summary += "%-59s %20s\n" % ('Spatial kernel:', 'Fixed ' + self.model.kernel)
     else:
         summary += "%-59s %20s\n" % ('Spatial kernel:', 'Adaptive ' + self.model.kernel)
-        
+
     summary += "%-59s %20s\n" % ('Criterion for optimal bandwidth:', diag.criterion)
+    summary += "%-65s %14s\n" % ('Multiple comparison correction:', diag.mcc)
     summary += "%-67s %12.3f\n" % ('Bandwidth used:', self.model.bw)
 
     summary += "\n%s\n" % ('Diagnostic Information')
@@ -153,13 +154,15 @@ def summaryMGWR(self,diag):
 
     summary += "%-59s %20s\n" % ('Termination criterion for MGWR:', '{:.1e}'.format(self.model.selector.tol_multi))
 
+    summary += "%-65s %14s\n" % ('Multiple comparison correction:', diag.mcc)
+
     summary += "%-59s %20d\n\n" % ('Number of iterations used:', diag.selector.bw[1].shape[0])
 
     summary += "%s\n" %('MGWR bandwidths')
     summary += '-' * 80 + '\n'
     summary += "%-20s %14s %10s %16s %16s\n" % ('Variable', 'Bandwidth', 'ENP_j','Adj t-val(95%)','Adj alpha(95%)')
     for j in range(self.k):
-        summary += "%-20s %14.3f %10.3f %16.3f %16.3f\n" % (diag.XNames[j], self.model.bw[j], self.ENP_j[j],self.critical_tval()[j],self.adj_alpha_j[j,1])
+        summary += "%-20s %14.3f %10.3f %16.3f %16.3f\n" % (diag.XNames[j], self.model.bws[j], self.ENP_j[j],self.critical_tval()[j],self.adj_alpha_j[j,1])
     
     if diag.mcTest != "Off":
         summary += "\n%s\n" %('Monte Carlo Test for Spatial Variability')

@@ -12,35 +12,41 @@ import sys,os
 class Ui_runningDialog(object):
     def setupUi(self, runningDialog):
         runningDialog.setObjectName("runningDialog")
-        runningDialog.resize(501, 361)
+        runningDialog.resize(501, 351)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(runningDialog.sizePolicy().hasHeightForWidth())
         runningDialog.setSizePolicy(sizePolicy)
         runningDialog.setModal(True)
-        self.horizontalLayoutWidget = QtWidgets.QWidget(runningDialog)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(170, 30, 171, 21))
-        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.label = QtWidgets.QLabel(self.horizontalLayoutWidget)
-        self.label.setObjectName("label")
-        self.horizontalLayout.addWidget(self.label)
-        self.label_2 = QtWidgets.QLabel(self.horizontalLayoutWidget)
-        self.label_2.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
-        self.label_2.setObjectName("label_2")
-        self.horizontalLayout.addWidget(self.label_2)
         self.loadingGIFLabel = QtWidgets.QLabel(runningDialog)
         self.loadingGIFLabel.setGeometry(QtCore.QRect(110, 60, 50, 50))
         self.loadingGIFLabel.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.loadingGIFLabel.setText("")
         self.loadingGIFLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.loadingGIFLabel.setObjectName("loadingGIFLabel")
-        self.printTextEdit = QtWidgets.QTextEdit(runningDialog)
-        self.printTextEdit.setGeometry(QtCore.QRect(20, 60, 461, 281))
+        self.gridLayoutWidget = QtWidgets.QWidget(runningDialog)
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(10, 10, 481, 331))
+        self.gridLayoutWidget.setObjectName("gridLayoutWidget")
+        self.gridLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
+        self.gridLayout.setContentsMargins(20, 20, 20, 20)
+        self.gridLayout.setObjectName("gridLayout")
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.label = QtWidgets.QLabel(self.gridLayoutWidget)
+        self.label.setObjectName("label")
+        self.horizontalLayout.addWidget(self.label)
+        self.label_2 = QtWidgets.QLabel(self.gridLayoutWidget)
+        self.label_2.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.label_2.setObjectName("label_2")
+        self.horizontalLayout.addWidget(self.label_2)
+        self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
+        self.printTextEdit = QtWidgets.QTextEdit(self.gridLayoutWidget)
         self.printTextEdit.setObjectName("printTextEdit")
+        self.gridLayout.addWidget(self.printTextEdit, 1, 0, 1, 1)
+        runningDialog.setLayout(self.gridLayout)
+        
+        
     
         
         """
@@ -92,6 +98,9 @@ class EmittingStream(QtCore.QObject):
     
     def write(self, text):
         self.textWritten.emit(str(text))
+    
+    def flush(self):
+        pass
 
 
 

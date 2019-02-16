@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>372</width>
-    <height>170</height>
+    <width>385</width>
+    <height>221</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
      <x>250</x>
      <y>20</y>
      <width>110</width>
-     <height>32</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
@@ -140,6 +140,49 @@
     <item>
      <property name="text">
       <string>Off</string>
+     </property>
+    </item>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_6">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>160</y>
+     <width>221</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Multiple Comparison Correction</string>
+   </property>
+   <widget class="QComboBox" name="mccComboBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>201</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>None</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Bonferroni</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Sidak</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>FDR</string>
      </property>
     </item>
    </widget>

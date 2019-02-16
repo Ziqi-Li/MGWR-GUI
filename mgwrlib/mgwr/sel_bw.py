@@ -7,18 +7,16 @@ __author__ = "Taylor Oshan Tayoshan@gmail.com"
 
 import spreg.user_output as USER
 import numpy as np
-from scipy.spatial.distance import pdist,squareform
+import multiprocessing as mp
+from scipy.spatial.distance import pdist
+from scipy.spatial.distance import cdist as cdist_scipy
 from scipy.optimize import minimize_scalar
 from spglm.family import Gaussian, Poisson, Binomial
-from spglm.iwls import iwls,_compute_betas_gwr
 from .kernels import *
 from .gwr import GWR
 from .search import golden_section, equal_interval, multi_bw
 from .diagnostics import get_AICc, get_AIC, get_BIC, get_CV
-from functools import partial
 
-kernels = {1: fix_gauss, 2: adapt_gauss, 3: fix_bisquare, 4:
-        adapt_bisquare, 5: fix_exp, 6:adapt_exp}
 getDiag = {'AICc': get_AICc,'AIC':get_AIC, 'BIC': get_BIC, 'CV': get_CV}
 
 class Sel_BW(object):
@@ -101,14 +99,6 @@ class Sel_BW(object):
                     this term is often the size of the population at risk or
                     the expected size of the outcome in spatial epidemiology
                     Default is None where Ni becomes 1.0 for all locations
-    dmat          : array
-                    n*n, distance matrix between calibration locations used
-                    to compute weight matrix
-                        
-    sorted_dmat   : array
-                    n*n, sorted distance matrix between calibration locations used
-                    to compute weight matrix. Will be None for fixed bandwidths
-        
     spherical     : boolean
                     True for shperical coordinates (long-lat),
                     False for projected coordinates (defalut).
@@ -136,42 +126,47 @@ class Sel_BW(object):
                     avoid having to do it again in the MGWR object.
 
     Examples
-    ________
+    --------
 
-    >>> import pysal
-    >>> from pysal.contrib.gwr.sel_bw import Sel_BW
-    >>> data = pysal.open(pysal.examples.get_path('GData_utm.csv'))
-    >>> coords = zip(data.bycol('X'), data.by_col('Y')) 
+    >>> import libpysal as ps
+    >>> from mgwr.sel_bw import Sel_BW
+    >>> data = ps.io.open(ps.examples.get_path('GData_utm.csv'))
+    >>> coords = list(zip(data.by_col('X'), data.by_col('Y')))
     >>> y = np.array(data.by_col('PctBach')).reshape((-1,1))
     >>> rural = np.array(data.by_col('PctRural')).reshape((-1,1))
     >>> pov = np.array(data.by_col('PctPov')).reshape((-1,1))
     >>> african_amer = np.array(data.by_col('PctBlack')).reshape((-1,1))
     >>> X = np.hstack([rural, pov, african_amer])
     
-    #Golden section search AICc - adaptive bisquare
+    Golden section search AICc - adaptive bisquare
+
     >>> bw = Sel_BW(coords, y, X).search(criterion='AICc')
-    >>> print bw
+    >>> print(bw)
     93.0
 
-    #Golden section search AIC - adaptive Gaussian
+    Golden section search AIC - adaptive Gaussian
+
     >>> bw = Sel_BW(coords, y, X, kernel='gaussian').search(criterion='AIC')
-    >>> print bw
+    >>> print(bw)
     50.0
 
-    #Golden section search BIC - adaptive Gaussian
+    Golden section search BIC - adaptive Gaussian
+
     >>> bw = Sel_BW(coords, y, X, kernel='gaussian').search(criterion='BIC')
-    >>> print bw
+    >>> print(bw)
     62.0
 
-    #Golden section search CV - adaptive Gaussian
+    Golden section search CV - adaptive Gaussian
+
     >>> bw = Sel_BW(coords, y, X, kernel='gaussian').search(criterion='CV')
-    >>> print bw
+    >>> print(bw)
     68.0
 
-    #Interval AICc - fixed bisquare
-    >>>  sel = Sel_BW(coords, y, X, fixed=True).
-    >>>  bw = sel.search(search_method='interval', bw_min=211001.0, bw_max=211035.0, interval=2) 
-    >>> print bw
+    Interval AICc - fixed bisquare
+
+    >>> sel = Sel_BW(coords, y, X, fixed=True)
+    >>> bw = sel.search(search_method='interval', bw_min=211001.0, bw_max=211035.0, interval=2)
+    >>> print(bw)
     211025.0
 
     """
@@ -196,15 +191,16 @@ class Sel_BW(object):
         self._functions = []
         self.constant = constant
         self.spherical = spherical
-        self._build_dMat()
         self.search_params = {}
-
 
     def search(self, search_method='golden_section', criterion='AICc',
             bw_min=None, bw_max=None, interval=0.0, tol=1.0e-6, max_iter=200,
             init_multi=None, tol_multi=1.0e-5, rss_score=False,
-            max_iter_multi=200, multi_bw_min=[None], multi_bw_max=[None],multiFlag=False):
+            max_iter_multi=200, multi_bw_min=[None], multi_bw_max=[None], pool=None):
         """
+        Method to select one unique bandwidth for a gwr model or a
+        bandwidth vector for a mgwr model.
+
         Parameters
         ----------
         criterion      : string
@@ -259,6 +255,7 @@ class Sel_BW(object):
         self.criterion = criterion
         self.bw_min = bw_min
         self.bw_max = bw_max
+        self.pool = pool
         
         if len(multi_bw_min) == k:
             self.multi_bw_min = multi_bw_min
@@ -321,29 +318,19 @@ class Sel_BW(object):
 
         if self.multi:
             self._mbw()
-            self.params = self.bw[3] #params
-            self.S = self.bw[-2] #(n,n)
-            self.R = self.bw[-1] #(n,n,k)
+            self.params = self.bw[3] #params n by k
+            self.bw_gwr = self.bw[-1] #scalar
         else:
-            self._bw(multiFlag)
-
+            self._bw()
+        
+        self.pool=None
         return self.bw[0]
     
-    def _build_dMat(self):
-        if self.fixed:
-            self.dmat = cdist(self.coords,self.coords,self.spherical)
-            self.sorted_dmat = None
+    def _bw(self):
+        if self.pool:
+            gwr_func = lambda bw: getDiag[self.criterion](GWR(self.coords, self.y, self.X_loc, bw, family=self.family, kernel=self.kernel,fixed=self.fixed, constant=self.constant).parafit(self.pool))
         else:
-            self.dmat = cdist(self.coords,self.coords,self.spherical)
-            self.sorted_dmat = np.sort(self.dmat)
-
-
-    def _bw(self,multiFlag):
-
-        gwr_func = lambda bw: getDiag[self.criterion](GWR(self.coords, self.y, 
-            self.X_loc, bw, family=self.family, kernel=self.kernel,
-            fixed=self.fixed, constant=self.constant,
-            dmat=self.dmat,sorted_dmat=self.sorted_dmat).fit(searching = True))
+            gwr_func = lambda bw: getDiag[self.criterion](GWR(self.coords, self.y, self.X_loc, bw, family=self.family, kernel=self.kernel, fixed=self.fixed, constant=self.constant).fit(searching = True))
         
         self._optimized_function = gwr_func
 
@@ -352,11 +339,10 @@ class Sel_BW(object):
                     self.constant)
             delta = 0.38197 #1 - (np.sqrt(5.0)-1.0)/2.0
             self.bw = golden_section(a, c, delta, gwr_func, self.tol,
-                    self.max_iter, self.int_score,multi=multiFlag)
-
+                    self.max_iter, self.int_score)
         elif self.search_method == 'interval':
             self.bw = equal_interval(self.bw_min, self.bw_max, self.interval,
-                    gwr_func, self.int_score, multi=multiFlag)
+                    gwr_func, self.int_score)
         elif self.search_method == 'scipy':
             self.bw_min, self.bw_max = self._init_section(self.X_glob, self.X_loc,
                     self.coords, self.constant)
@@ -392,13 +378,15 @@ class Sel_BW(object):
         max_iter = self.max_iter
         def gwr_func(y,X,bw):
             return GWR(coords, y,X,bw,family=family, kernel=kernel, fixed=fixed,
-                    offset=offset, constant=False).fit()
+                    offset=offset, constant=False, hat_matrix=False)
         def bw_func(y,X):
-            return Sel_BW(coords, y,X,X_glob=[], family=family, kernel=kernel,
+            selector = Sel_BW(coords, y,X,X_glob=[], family=family, kernel=kernel,
                     fixed=fixed, offset=offset, constant=False)
+            return selector
+
         def sel_func(bw_func, bw_min=None, bw_max=None):
             return bw_func.search(search_method=search_method, criterion=criterion,
-                    bw_min=bw_min, bw_max=bw_max, interval=interval, tol=tol, max_iter=max_iter,multiFlag=True)
+                    bw_min=bw_min, bw_max=bw_max, interval=interval, tol=tol, max_iter=max_iter, pool=self.pool)
         self.bw = multi_bw(self.init_multi, y, X, n, k, family,
                 self.tol_multi, self.max_iter_multi, self.rss_score, gwr_func,
                 bw_func, sel_func, multi_bw_min, multi_bw_max)

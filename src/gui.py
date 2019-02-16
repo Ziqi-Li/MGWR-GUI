@@ -19,10 +19,16 @@ from .loader import Ui_runningDialog
 from .advancedMGWR import Ui_advMGWRDialog
 from .advancedGWR import Ui_advGWRDialog
 from .summaryGUI import Ui_summaryDlg
+import multiprocessing as mp
 #from .map import *
 from time import sleep
+import logging
+from io import StringIO
+
+
+
 class Ui_Dialog(object):
-    def setupUi(self, Dialog):
+    def setupUi(self, Dialog, pool):
         Dialog.setObjectName("Dialog")
         Dialog.resize(764, 563)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
@@ -362,8 +368,10 @@ class Ui_Dialog(object):
         self.addY.raise_()
         self.label_4.raise_()
         self.responseLabel.raise_()
-
         self.retranslateUi(Dialog)
+
+        self.pool = pool
+
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -430,7 +438,7 @@ class Ui_Dialog(object):
     def update_label(self):
         current_time = self.elapsedTimeFormatter(self.time)
         self.loaderUI.label_2.setText(current_time)
-    
+
     def elapsedTimeFormatter(self,time):
         secs = time.elapsed() / 1000
         mins = int((secs / 60) % 60)
@@ -439,69 +447,69 @@ class Ui_Dialog(object):
         return str(hours).zfill(2) + ':' + str(mins).zfill(2)  + ':' + str(secs).zfill(2)
 
     def addActionsToUI(self):
-        
+
         self.greyOutLineEdit(self.OffsetLabel)
         self.greyOutLineEdit(self.bwPreDefined)
         self.greyOutLineEdit(self.bwMin)
         self.greyOutLineEdit(self.bwMax)
         self.greyOutLineEdit(self.bwInterval)
-        
+
 
         self.openDataBTN.clicked.connect(self.openData)
         #self.openPredictionBTN.clicked.connect(self.openPredictData)
-        
+
         self.saveSumBTN.clicked.connect(lambda:self.getSaveFile(0))
         self.saveBetasBTN.clicked.connect(lambda:self.getSaveFile(1))
-        
+
         self.addID.clicked.connect(lambda: self.addVariable(self.idLabel))
         self.removeID.clicked.connect(lambda: self.removeVariable(self.idLabel))
-        
+
         self.addXCoor.clicked.connect(lambda: self.addVariable(self.xCoorLabel))
         self.removeXCoor.clicked.connect(lambda: self.removeVariable(self.xCoorLabel))
-        
+
         self.addYCoor.clicked.connect(lambda: self.addVariable(self.yCoorLabel))
         self.removeYCoor.clicked.connect(lambda: self.removeVariable(self.yCoorLabel))
-        
+
         self.addY.clicked.connect(lambda: self.addVariable(self.responseLabel))
         self.removeY.clicked.connect(lambda: self.removeVariable(self.responseLabel))
-        
+
         self.addOffset.clicked.connect(lambda: self.addVariable(self.OffsetLabel))
         self.removeOffset.clicked.connect(lambda: self.removeVariable(self.OffsetLabel))
-        
+
         self.addLocal.clicked.connect(self.addVarToLocal)
         self.removeLocal.clicked.connect(self.removeVarFromLocal)
-    
+
         self.runBTN.clicked.connect(self.run_onclick)
         self.advancedBTN.clicked.connect(self.advancedOnClick)
-        
+
         self.openDataPath.textChanged.connect(lambda: self.removeRed(self.openDataPath))
         self.sumFileSavePath.textChanged.connect(lambda: self.removeRed(self.sumFileSavePath))
         self.betaFileSavePath.textChanged.connect(lambda: self.removeRed(self.betaFileSavePath))
-        
+
         self.responseLabel.textChanged.connect(lambda: self.removeRed(self.responseLabel))
         self.xCoorLabel.textChanged.connect(lambda: self.removeRed(self.xCoorLabel))
         self.yCoorLabel.textChanged.connect(lambda: self.removeRed(self.yCoorLabel))
         self.idLabel.textChanged.connect(lambda: self.removeRed(self.idLabel))
-        
+
         self.bwMin.textChanged.connect(lambda: self.removeRed(self.bwMin))
         self.bwMax.textChanged.connect(lambda: self.removeRed(self.bwMax))
         self.bwPreDefined.textChanged.connect(lambda: self.removeRed(self.bwPreDefined))
         self.bwInterval.textChanged.connect(lambda: self.removeRed(self.bwInterval))
-        
+
         self.isGWRRBTN.clicked.connect(self.gwrMode)
         self.isMGWRRBTN.clicked.connect(self.mgwrMode)
-        
+
         self.isPrjCoorRBTN.clicked.connect(self.projCoors)
         self.isSphCoorRBTN.clicked.connect(self.sphCoors)
-        
-        
+
+
         validator = QtGui.QDoubleValidator()
         validator.setBottom(0)
         self.bwMin.setValidator(validator)
         self.bwMax.setValidator(validator)
         self.bwInterval.setValidator(validator)
         self.bwPreDefined.setValidator(validator)
-        
+
         self.bwDropdown.currentIndexChanged.connect(self.changeSearchMethod)
         self.modelTypeDropdown.currentIndexChanged.connect(self.modelChanged)
 
@@ -510,30 +518,32 @@ class Ui_Dialog(object):
         self.thread = GWRThread(self)
         self.thread.finished.connect(self.workDone)
         self.runningWindow = QtWidgets.QDialog()
-        
+
         self.runningDialog = QtWidgets.QDialog()
         self.loaderUI = Ui_runningDialog()
         self.loaderUI.setupUi(self.runningDialog)
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_label)
         self.time = QtCore.QTime()
-    
+
         self.path = os.path.dirname(os.path.dirname(os.path.dirname(sys.argv[0])))
-    
-    
+
+
         self.advMGWRDialog = QtWidgets.QDialog()
         self.advMGWRUI = Ui_advMGWRDialog()
         self.advMGWRUI.setupUi(self.advMGWRDialog)
         self.advMGWRUI.addActionsToUI()
-    
+
         self.advGWRDialog = QtWidgets.QDialog()
         self.advGWRUI = Ui_advGWRDialog()
         self.advGWRUI.setupUi(self.advGWRDialog)
         self.advGWRUI.addActionsToUI()
-            
+        self.log_stream = StringIO()
 
-    
+
+
     def openData(self):
+
         try:
             fileName,_ = QtWidgets.QFileDialog.getOpenFileName(None, 'OpenFile',self.path,"Table(*.csv *.xls *.xlsx *.dbf)")
             if fileName:
@@ -544,7 +554,7 @@ class Ui_Dialog(object):
                     self.data = pd.read_excel(fileName)
                 elif fileName.endswith('.dbf'):
                     self.data = Dbf5(fileName).to_dataframe()
-                
+
                 fields = self.data.columns.tolist()
                 self.localList.clear()
                 self.localList.addItem('Intercept')
@@ -555,11 +565,15 @@ class Ui_Dialog(object):
                 self.yCoorLabel.clear()
                 self.responseLabel.clear()
                 self.variableList.addItems(fields)
-    
-        except:
+
+        except Exception as e:
             error_dialog = QtWidgets.QErrorMessage()
             error_dialog.showMessage('Something went wrong when openning data. Please double check.')
             error_dialog.exec_()
+            f = open('log.txt', 'w')
+            f.write('An exceptional thing happed - %s' % e)
+            f.close()
+            logging.exception('')
 
 
     def openPredictData(self):
@@ -574,7 +588,7 @@ class Ui_Dialog(object):
             error_dialog.showMessage('Something went wrong when openning data. Please double check.')
             error_dialog.exec_()
 
-    
+
 
 
     def addVariable(self,destination):
@@ -608,16 +622,16 @@ class Ui_Dialog(object):
 
     def removeRed(self,lineEdit):
         lineEdit.setStyleSheet("")
-    
+
     def greyOutLineEdit(self,lineEdit):
         lineEdit.clear()
         lineEdit.setStyleSheet("background-color:LightGrey")
         lineEdit.setDisabled(True)
-    
+
     def deGreyOutLineEdit(self,lineEdit):
         lineEdit.setStyleSheet("")
         lineEdit.setDisabled(False)
-    
+
     def changeSearchMethod(self,index):
         #golden section
         if index == 0:
@@ -665,69 +679,72 @@ class Ui_Dialog(object):
             self.addOffset.setEnabled(True)
             self.removeOffset.setEnabled(True)
 
-    
-    
+
+
     def gwrMode(self):
 
         #self.predictionBox.show()
         #self.predictionBox.setEnabled(True)
         self.advancedBTN.setEnabled(True)
-        
+
         self.modelTypeDropdown.clear()
         self.modelTypeDropdown.addItem("Gaussian")
         self.modelTypeDropdown.addItem("Binomial")
         self.modelTypeDropdown.addItem("Poisson")
-        
+
         self.gridLayout_5.addWidget(self.groupBox_12, 0, 1, 1, 1)
-        
+        self.bwDropdown.clear()
+        self.bwDropdown.addItem("Golden Section")
+        self.bwDropdown.addItem("Interval Search")
         self.bwDropdown.addItem("Pre-defined bandwidth")
-        
+
         self.isGWR = True
         self.isMGWR = False
-    
+
     def mgwrMode(self):
         #self.predictionBox.setEnabled(False)
         self.advancedBTN.setEnabled(True)
-        
+
         self.modelTypeDropdown.clear()
         self.modelTypeDropdown.addItem("Gaussian")
-        self.bwDropdown.removeItem(2)
-        
+        self.bwDropdown.removeItem(1)
+        self.bwDropdown.removeItem(1)
+
         self.isMGWR = True
         self.isGWR = False
-    
-    
+
+
     def projCoors(self):
         self.label_X.setText('X   ')
         self.label_Y.setText('Y   ')
-    
+
     def sphCoors(self):
         self.label_X.setText('Lon')
         self.label_Y.setText('Lat')
-    
+
 
     def advancedOnClick(self):
         if self.isGWR:
             self.advGWRUI.loadSettings()
             self.advGWRDialog.exec_()
-        
+
         if self.isMGWR:
             self.advMGWRUI.loadSettings()
             self.advMGWRDialog.exec_()
-    
-    
+
+
     #Get 3 Save Paths for control, summary and betas
     def getSaveFile(self,ext):
         fileName,_ = QtWidgets.QFileDialog.getSaveFileName(None, 'SaveFile',os.path.join(os.path.dirname(self.path),'MGWR_session'))
         if fileName:
             if ext == 0:
                 self.sumFileSavePath.setText(fileName+'_summary.txt')
-                self.betaFileSavePath.setText(fileName + '_betas.csv')
+                self.betaFileSavePath.setText(fileName + '_results.csv')
             if ext == 1:
-                self.betaFileSavePath.setText(fileName + '_betas.csv')
+                self.betaFileSavePath.setText(fileName + '_results.csv')
 
-    
-    
+
+
     #Getting all data for running model
     def preCheckEmptyFields(self):
         allSet = True
@@ -752,7 +769,7 @@ class Ui_Dialog(object):
         if not self.localList.count():
             self.localList.setStyleSheet("QListWidget{border: 2px solid red;}")
             allSet = False
-        
+
         if self.bwDropdown.currentText() == "Interval Search":
             if not self.bwMin.text():
                 self.bwMin.setStyleSheet("border: 2px solid red;")
@@ -770,7 +787,7 @@ class Ui_Dialog(object):
 
         return allSet
 
-            
+
     def loadDataModel(self):
         try:
         #Load Variables
@@ -780,54 +797,56 @@ class Ui_Dialog(object):
             else:
                 self.id = pd.Series(np.arange(self.data.shape[0]))
                 self.idName = "id"
-            
+
+            print(self.id)
             self.data['Intercept'] = 1
             self.yName = self.responseLabel.text()
             self.XNames =  [str(self.localList.item(i).text()) for i in range(self.localList.count())]
             if 'Intercept' in self.XNames:
                 self.constant = True
                 self.X = self.data[self.XNames].drop(columns=['Intercept'])
-
             else:
                 self.constant = False
                 self.X = self.data[self.XNames]
-            
+
             self.y = self.data[[self.responseLabel.text()]]
             #self.X = self.data[self.XNames]
             self.xCoor = self.data[[self.xCoorLabel.text()]]
             self.yCoor = self.data[[self.yCoorLabel.text()]]
+
+
             self.comp_data = pd.concat([self.id,self.y, self.X, self.xCoor,self.yCoor],axis=1).dropna()
             #self.comp_data = self.comp_data[self.comp_data.applymap(np.isreal).all(1)]
-            
+
             if self.idLabel.text():
                 self.id = self.comp_data[[self.idLabel.text()]].values.reshape(-1,1)
             else:
                 self.id = pd.Series(np.arange(self.comp_data.shape[0]))
-            
-            
+
+
             self.y = self.comp_data[[self.responseLabel.text()]].values.reshape(-1,1)
             self.X = self.comp_data.ix[:,2:-2].values
             self.xCoor = self.comp_data.ix[:,-2]
             self.yCoor = self.comp_data.ix[:,-1]
 
-            
+
             self.nObs = len(self.comp_data.index)
             self.nMiss = len(self.data.index) - self.nObs
-            self.coords = list(zip(self.xCoor,self.yCoor))
+            self.coords = np.array(list(zip(self.xCoor,self.yCoor)))
             self.offset = None
-            
-            
+
+
             if self.isPrjCoorRBTN.isChecked():
                 self.coorType = False
             if self.isSphCoorRBTN.isChecked():
                 self.coorType = True
-        
-    
+
+
             #Load Model Options:
 
             if self.bwDropdown.currentText() == "Golden Section":
                 self.search = 'golden_section'
-        
+
             elif self.bwDropdown.currentText() == "Interval Search":
                 self.search = 'interval'
             else:
@@ -838,7 +857,7 @@ class Ui_Dialog(object):
             self.criterion = self.optimCriDropdown.currentText()
             self.isGWR = self.isGWRRBTN.isChecked()
             self.isMGWR = self.isMGWRRBTN.isChecked()
-            
+
             if self.modelTypeDropdown.currentText() == "Gaussian":
                 self.family = Gaussian()
             elif self.modelTypeDropdown.currentText() == "Poisson":
@@ -847,9 +866,10 @@ class Ui_Dialog(object):
                     self.offset = self.data[[self.OffsetLabel.text()]].as_matrix().reshape(-1,1)
             elif self.modelTypeDropdown.currentText() == "Binomial":
                 self.family = Binomial()
-            
-            
+
+
             #MGWR Advanced Settings
+
             self.MGWRVarSTD = self.advMGWRUI.varSTD
             self.GWRVarSTD = self.advGWRUI.varSTD
 
@@ -861,18 +881,20 @@ class Ui_Dialog(object):
                 self.X = (self.X - np.mean(self.X, axis=0)) / np.std(self.X, axis=0)
                 self.y = (self.y - np.mean(self.y, axis=0)) / np.std(self.y, axis=0)
 
-    
+
             self.SOC = self.advMGWRUI.soc
             self.initBeta = self.advMGWRUI.init
             self.tol_multi = float(self.advMGWRUI.converg)
             self.tol_gwr = 1e-05
-            
+
             if self.isMGWR:
                 self.mcTest = self.advMGWRUI.mcTest
                 self.locollinear = self.advMGWRUI.locollinear
+                self.mcc = self.advMGWRUI.mcc
             if self.isGWR:
                 self.mcTest = self.advGWRUI.mcTest
                 self.locollinear = self.advGWRUI.locollinear
+                self.mcc = self.advGWRUI.mcc
 
             if self.initBeta == "GWR estimate":
                 self.init_multi = True
@@ -883,23 +905,22 @@ class Ui_Dialog(object):
                 self.rss_score = False
             else:
                 self.rss_score = True
-        
+
             return True
-                
+
         except:
             return False
-            
+
     def run_onclick(self):
-        
+
         if not self.preCheckEmptyFields():
             err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Please fix inputs in red.")
             return
-        
+
         if not self.loadDataModel():
             err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Something wrong when loading variables to model.")
             return
-        
-        print("haha")
+
         self.threadRunning = True
         self.thread.start()
 
@@ -911,15 +932,15 @@ class Ui_Dialog(object):
         #self.loaderUI.connect(self.loaderUI, Qt.SIGNAL('triggered()'), self.closeEvent)
         self.runningDialog.closeEvent = self.closeEvent
         self.runningDialog.exec_()
-            
-    
 
-    
+
+
+
     def closeEvent(self, event):
         if self.threadRunning:
             reply=QtWidgets.QMessageBox.question(None,'Message',"Closing this diaglog will quit MGWR, are you sure to quit?",QtWidgets.QMessageBox.Yes,QtWidgets.QMessageBox.No)
             if reply == QtWidgets.QMessageBox.Yes:
-            
+
                 #self.timer.stop()
                 #self.loaderUI.stopThread(self.thread)
                 event.accept()
@@ -928,7 +949,7 @@ class Ui_Dialog(object):
                 QtWidgets.QApplication.quit()
             else:
                 event.ignore()
-    
+
     def workDone(self):
         self.timer.stop()
         self.threadRunning = False
@@ -936,7 +957,7 @@ class Ui_Dialog(object):
         if not self.success:
             err_msg = QtWidgets.QMessageBox.critical(None, "Error", "Something went wrong during model calibration. Please double check your settings and data.")
             return
-                
+
         msg = QtWidgets.QMessageBox.information(None, "Success", "Running complete!\nTime Elapsed:\n" + self.elapsedTimeFormatter(self.time))
         summaryDlg = QtWidgets.QDialog()
         smyui = Ui_summaryDlg()
@@ -944,9 +965,9 @@ class Ui_Dialog(object):
         smyui.loadText(self.sumFileSavePath.text())
         summaryDlg.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowCloseButtonHint)
         summaryDlg.exec_()
-    
 
-    
+
+
     #Run model
     def runGWR(self):
         self.begin_t = datetime.now()
@@ -958,56 +979,78 @@ class Ui_Dialog(object):
                 if self.search == 'golden_section':
                     print("Golden section search minimizing", self.criterion)
                     self.bw = self.selector.search(search_method='golden_section',criterion=self.criterion)
-            
+
                 elif self.search == 'interval':
                     print("Interval bandwidth searching:")
-                    min = int(self.bwMin.text())
-                    max = int(self.bwMax.text())
-                    step = int(self.bwInterval.text())
+                    min = int(float(self.bwMin.text()))
+                    max = int(float(self.bwMax.text()))
+                    step = int(float(self.bwInterval.text()))
                     self.bw = self.selector.search(search_method='interval',bw_min=min,bw_max=max,interval=step,criterion=self.criterion)
-                
+
                 else:
-                    self.bw = int(self.bwPreDefined.text())
-            
+                    self.bw = int(float(self.bwPreDefined.text()))
+
                 print("Fitting GWR using optimal bandwidth: ", self.bw)
                 self.results = GWR(self.coords, self.y, self.X, self.bw, fixed=self.fixed, kernel=self.kernel, family=self.family,offset=self.offset, constant=self.constant,spherical=self.coorType).fit()
-            
+
                 if self.mcTest != "Off":
                     print("Starting spatial variability test")
                     self.testMCResults = self.results.spatial_variability(self.selector)
 
                 if self.locollinear != "Off":
                     self.locollinearResults = self.results.local_collinearity()
-                
+
                 self.end_t = datetime.now()
                 outputGWR(self)
-            
+
             if self.isMGWR:
                 print ("MGWR running...")
                 print ("Backfitting...")
                 self.selector = Sel_BW(self.coords, self.y, self.X, fixed=self.fixed,kernel=self.kernel, multi=True,constant=self.constant,spherical=self.coorType)
-                self.bws = self.selector.search(search_method='golden_section',criterion=self.criterion, rss_score=self.rss_score, tol_multi=self.tol_multi)
-                self.results = MGWR(self.coords, self.y, self.X, self.selector, kernel=self.kernel, fixed=self.fixed,constant=self.constant,spherical=self.coorType).fit()
-            
+                self.bws = self.selector.search(search_method='golden_section',criterion=self.criterion, rss_score=self.rss_score, tol_multi=self.tol_multi, pool=self.pool)
+                self.results = MGWR(self.coords, self.y, self.X, self.selector, kernel=self.kernel, fixed=self.fixed,constant=self.constant,spherical=self.coorType).fit(n_chunks=120,pool=self.pool)
+
                 if self.mcTest != "Off":
                     self.testMCResults = self.results.spatial_variability(self.selector)
-            
+
                 if self.locollinear != "Off":
                     self.locollinearResults = self.results.local_collinearity()
-                
+
                 self.end_t = datetime.now()
                 outputMGWR(self)
-                    
+
             print("Done!")
             print("Ended at: ", str(self.end_t).split('.', 2)[0])
             self.success = True
-                
+
+
+        except Exception as err:
+            #error_dialog = QtWidgets.QErrorMessage()
+            #error_dialog.showMessage('Something went wrong when openning data. Please double check.')
+            #error_dialog.exec_()
+            #logging.basicConfig(filename='mgwr.log', level=logging.DEBUG)
+
+            logging.basicConfig(stream=self.log_stream, level=logging.DEBUG)
+            logging.exception(err)
+            self.end_t = datetime.now()
+            print("Error!")
+            print("Ended at: ", str(self.end_t).split('.', 2)[0])
+            print(self.log_stream.getvalue())
+            self.log_stream.seek(0)
+            self.log_stream.truncate(0)
+            self.success = False
+
+            return
+
+        '''
         except:
             self.end_t = datetime.now()
             print("Error!")
             print("Ended at: ", str(self.end_t).split('.', 2)[0])
             self.success = False
             return
+        '''
+
 
 
 class GWRThread(QtCore.QThread):
@@ -1024,19 +1067,17 @@ class GWRThread(QtCore.QThread):
 
 class timerThread(QtCore.QThread):
     timeElapsed = QtCore.pyqtSignal(int)
-    
+
     def __init__(self, parent=None):
         super(timerThread, self).__init__(parent)
         self.timeStart = None
-    
+
     def start(self, timeStart):
         self.timeStart = timeStart
-        
+
         return super(timerThread, self).start()
-    
+
     def run(self):
         while self.parent().isRunning():
             self.timeElapsed.emit(time.time() - self.timeStart)
             time.sleep(1)
-
-

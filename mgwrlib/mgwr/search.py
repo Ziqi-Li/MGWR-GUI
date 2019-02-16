@@ -168,22 +168,12 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
     """
     if init is None:
         bw = sel_func(bw_func(y, X))
-        optim_model = gwr_func(y, X, bw)
+        optim_model = gwr_func(y, X, bw).fit(searching=True)
     else:
-        optim_model = gwr_func(y, X, init)
-     
-    S = optim_model.S
+        optim_model = gwr_func(y, X, init).fit(searching=True)
+    bw_gwr = bw
     err = optim_model.resid_response.reshape((-1,1))
     param = optim_model.params
-    
-    R = np.zeros((n,n,k))
-    
-    for j in range(k):
-        for i in range(n):
-            wi = optim_model.W[i].reshape(-1,1)
-            xT = (X * wi).T
-            P = np.dot(np.linalg.inv(np.dot(xT, X)), xT)
-            R[i,:,j] = X[i,j]*P[j]
 
     XB = np.multiply(param, X)
     if rss_score:
@@ -192,21 +182,14 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
     scores = []
     delta = 1e6
     BWs = []
-    VALs = []
-    FUNCs = []
-    
-    try:
-        from tqdm import tqdm #if they have it, let users have a progress bar
-    except ImportError:
-        def tqdm(x): #otherwise, just passthrough the range
-            return x
-    for iters in tqdm(range(1, max_iter+1)):
-        
+    bw_counter = np.zeros(k)
+    bws = np.empty(k)
+
+    for iters in range(1, max_iter+1):
+        print(iters)
         new_XB = np.zeros_like(X)
-        bws = []
         vals = []
-        funcs = []
-        current_partial_residuals = []
+
         params = np.zeros_like(X)
         f_XB = XB.copy()
         f_err = err.copy()
@@ -216,22 +199,22 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
             temp_y = temp_y + err
             temp_X = X[:,j].reshape((-1,1))
             bw_class = bw_func(temp_y, temp_X)
-            funcs.append(bw_class._functions)
-            bw = sel_func(bw_class, multi_bw_min[j], multi_bw_max[j])
-            optim_model = gwr_func(temp_y, temp_X, bw)
-            Aj = optim_model.S
-            new_Rj = Aj - np.dot(Aj, S) + np.dot(Aj, R[:,:,j])
-            S = S - R[:,:,j] + new_Rj
-            R[:,:,j] = new_Rj
             
+            if np.all(bw_counter==2):
+                bw = bws[j]
+            else:
+                bw = sel_func(bw_class, multi_bw_min[j], multi_bw_max[j])
+                if bw == bws[j]:
+                    bw_counter[j] += 1
+                else:
+                    bw_counter = np.zeros(k)
+        
+            optim_model = gwr_func(temp_y, temp_X, bw).fit(searching=True)
             err = optim_model.resid_response.reshape((-1,1))
             param = optim_model.params.reshape((-1,))
-
             new_XB[:,j] = optim_model.predy.reshape(-1)
-            bws.append(copy.deepcopy(bw))
             params[:,j] = param
-            vals.append(bw_class.bw[1])
-            current_partial_residuals.append(err.copy())
+            bws[j] = bw
 
         num = np.sum((new_XB - XB)**2)/n
         den = np.sum(np.sum(new_XB, axis=1)**2)
@@ -246,8 +229,6 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
         scores.append(copy.deepcopy(score))
         delta = score
         BWs.append(copy.deepcopy(bws))
-        VALs.append(copy.deepcopy(vals))
-        FUNCs.append(copy.deepcopy(funcs))
 
         print("Current iteration:",iters,",SOC:", np.round(score,7))
         print("Bandwidths:", ', '.join([str(bw) for bw in bws]))
@@ -257,4 +238,4 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
     opt_bws = BWs[-1]
     return (opt_bws, np.array(BWs),
                           np.array(scores), params,
-                          err, S, R)
+                          err, None, None, bw_gwr)

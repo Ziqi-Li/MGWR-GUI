@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'advanced.ui'
+# Form implementation generated from reading ui file 'advOptMGWR.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,7 @@ class Ui_advMGWRDialog(object):
     def setupUi(self, advDialog):
         advDialog.setObjectName("advDialog")
         advDialog.setWindowModality(QtCore.Qt.WindowModal)
-        advDialog.resize(480, 216)
+        advDialog.resize(480, 231)
         advDialog.setModal(True)
         self.SOCBox = QtWidgets.QGroupBox(advDialog)
         self.SOCBox.setGeometry(QtCore.QRect(250, 10, 221, 51))
@@ -31,12 +31,10 @@ class Ui_advMGWRDialog(object):
         self.initComboBox.addItem("")
         self.initComboBox.addItem("")
         self.applyBTN = QtWidgets.QPushButton(advDialog)
-        self.applyBTN.setGeometry(QtCore.QRect(130, 170, 101, 32))
-        self.applyBTN.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.applyBTN.setGeometry(QtCore.QRect(250, 180, 101, 32))
         self.applyBTN.setObjectName("applyBTN")
         self.resetBTN = QtWidgets.QPushButton(advDialog)
-        self.resetBTN.setGeometry(QtCore.QRect(249, 170, 101, 32))
-        self.resetBTN.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.resetBTN.setGeometry(QtCore.QRect(369, 180, 101, 32))
         self.resetBTN.setObjectName("resetBTN")
         self.groupBox_3 = QtWidgets.QGroupBox(advDialog)
         self.groupBox_3.setGeometry(QtCore.QRect(250, 60, 221, 51))
@@ -70,7 +68,16 @@ class Ui_advMGWRDialog(object):
         self.locollinearComboBox.setObjectName("locollinearComboBox")
         self.locollinearComboBox.addItem("")
         self.locollinearComboBox.addItem("")
-        
+        self.groupBox_6 = QtWidgets.QGroupBox(advDialog)
+        self.groupBox_6.setGeometry(QtCore.QRect(10, 160, 221, 51))
+        self.groupBox_6.setObjectName("groupBox_6")
+        self.mccComboBox = QtWidgets.QComboBox(self.groupBox_6)
+        self.mccComboBox.setGeometry(QtCore.QRect(10, 20, 201, 21))
+        self.mccComboBox.setObjectName("mccComboBox")
+        self.mccComboBox.addItem("")
+        self.mccComboBox.addItem("")
+        self.mccComboBox.addItem("")
+        self.mccComboBox.addItem("")
         
         self.advDialog = advDialog
         self.varSTD = "On"
@@ -79,6 +86,7 @@ class Ui_advMGWRDialog(object):
         self.soc = "SOC-f"
         self.init = "GWR estimates"
         self.converg = "1e-5"
+        self.mcc = "None"
         
         self.retranslateUi(advDialog)
         QtCore.QMetaObject.connectSlotsByName(advDialog)
@@ -106,7 +114,11 @@ class Ui_advMGWRDialog(object):
         self.groupBox_5.setTitle(_translate("advDialog", "Local collinearity diagnostics"))
         self.locollinearComboBox.setItemText(0, _translate("advDialog", "Off"))
         self.locollinearComboBox.setItemText(1, _translate("advDialog", "On"))
-
+        self.groupBox_6.setTitle(_translate("advDialog", "Multiple comparison correction"))
+        self.mccComboBox.setItemText(0, _translate("advDialog", "None"))
+        self.mccComboBox.setItemText(1, _translate("advDialog", "Bonferroni"))
+        self.mccComboBox.setItemText(2, _translate("advDialog", "Sidak"))
+        self.mccComboBox.setItemText(3, _translate("advDialog", "FDR"))
     
     def loadSettings(self):
         
@@ -140,6 +152,15 @@ class Ui_advMGWRDialog(object):
         else:
             self.convComboBox.setCurrentIndex(1)
 
+        if self.mcc == "None":
+            self.mccComboBox.setCurrentIndex(0)
+        elif self.mcc == "Bonferroni":
+            self.mccComboBox.setCurrentIndex(1)
+        elif self.mcc == "Sidak":
+            self.mccComboBox.setCurrentIndex(2)
+        elif self.mcc == "FDR":
+            self.mccComboBox.setCurrentIndex(3)
+
 
     def addActionsToUI(self):
         self.applyBTN.clicked.connect(self.applyOnClick)
@@ -152,6 +173,7 @@ class Ui_advMGWRDialog(object):
         self.converg = self.convComboBox.currentText()
         self.locollinear = self.locollinearComboBox.currentText()
         self.mcTest = self.mcComboBox.currentText()
+        self.mcc = self.mccComboBox.currentText()
         
         self.advDialog.close()
     
@@ -162,5 +184,6 @@ class Ui_advMGWRDialog(object):
         self.SOCComboBox.setCurrentIndex(0)
         self.initComboBox.setCurrentIndex(0)
         self.convComboBox.setCurrentIndex(0)
+        self.mccComboBox.setCurrentIndex(0)
 
 
