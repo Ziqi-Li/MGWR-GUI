@@ -4,9 +4,9 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\Users\\lziqi\\Desktop\\mgwr-gui-windows-para'],
+             pathex=['C:\\Users\\Ziqi\\Desktop\\mgwr-gui-windows-para'],
              binaries=[],
-             datas=[('C:\\Users\\lziqi\\Desktop\\mgwr-gui-windows-para\\img','img')],
+             datas=[('C:\\Users\\Ziqi\\Desktop\\mgwr-gui-windows-para\\img','img')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],

@@ -2,22 +2,21 @@
 
 #x_glob parameter does not yet do anything; it is for semiparametric
 
-
 __author__ = "Taylor Oshan Tayoshan@gmail.com"
 
 import spreg.user_output as USER
 import numpy as np
 import multiprocessing as mp
 from scipy.spatial.distance import pdist
-from scipy.spatial.distance import cdist as cdist_scipy
 from scipy.optimize import minimize_scalar
 from spglm.family import Gaussian, Poisson, Binomial
-from .kernels import *
+from .kernels import Kernel
 from .gwr import GWR
 from .search import golden_section, equal_interval, multi_bw
 from .diagnostics import get_AICc, get_AIC, get_BIC, get_CV
 
-getDiag = {'AICc': get_AICc,'AIC':get_AIC, 'BIC': get_BIC, 'CV': get_CV}
+getDiag = {'AICc': get_AICc, 'AIC': get_AIC, 'BIC': get_BIC, 'CV': get_CV}
+
 
 class Sel_BW(object):
     """
@@ -170,21 +169,22 @@ class Sel_BW(object):
     211025.0
 
     """
+
     def __init__(self, coords, y, X_loc, X_glob=None, family=Gaussian(),
-            offset=None, kernel='bisquare', fixed=False, multi=False,
-            constant=True, spherical=False):
-        self.coords = coords
+                 offset=None, kernel='bisquare', fixed=False, multi=False,
+                 constant=True, spherical=False):
+        self.coords = np.array(coords)
         self.y = y
         self.X_loc = X_loc
         if X_glob is not None:
             self.X_glob = X_glob
         else:
             self.X_glob = []
-        self.family=family
+        self.family = family
         self.fixed = fixed
         self.kernel = kernel
         if offset is None:
-          self.offset = np.ones((len(y), 1))
+            self.offset = np.ones((len(y), 1))
         else:
             self.offset = offset * 1.0
         self.multi = multi
@@ -194,9 +194,11 @@ class Sel_BW(object):
         self.search_params = {}
 
     def search(self, search_method='golden_section', criterion='AICc',
-            bw_min=None, bw_max=None, interval=0.0, tol=1.0e-6, max_iter=200,
-            init_multi=None, tol_multi=1.0e-5, rss_score=False,
-            max_iter_multi=200, multi_bw_min=[None], multi_bw_max=[None], pool=None):
+               bw_min=None, bw_max=None, interval=0.0, tol=1.0e-6,
+               max_iter=200, init_multi=None, tol_multi=1.0e-5,
+               rss_score=False, max_iter_multi=200, multi_bw_min=[None],
+               multi_bw_max=[None
+                             ], bws_same_times=3, pool=None, verbose=False):
         """
         Method to select one unique bandwidth for a gwr model or a
         bandwidth vector for a mgwr model.
@@ -234,11 +236,18 @@ class Sel_BW(object):
                          algorith faster though it may result in a less optimal
                          model
         max_iter_multi : max iterations if no convergence to tol for multiple
-                         bandwidth backfittign algorithm
+                         bandwidth backfitting algorithm
         rss_score      : True to use the residual sum of sqaures to evaluate
                          each iteration of the multiple bandwidth backfitting
                          routine and False to use a smooth function; default is
                          False
+        bws_same_times : If bandwidths keep the same between iterations for
+                         bws_same_times (default 3) in backfitting, then use the
+                         current set of bandwidths as final bandwidths.
+        pool           : A multiprocessing Pool object to enbale parallel fitting;
+                         default is None
+        verbose        : Boolean
+                         If true, bandwidth searching history is printed out; default is False.
 
         Returns
         -------
@@ -249,32 +258,36 @@ class Sel_BW(object):
                          designs matrix, X
         """
         k = self.X_loc.shape[1]
-        if self.constant: #k is the number of covariates
-            k +=1
+        if self.constant:  #k is the number of covariates
+            k += 1
         self.search_method = search_method
         self.criterion = criterion
         self.bw_min = bw_min
         self.bw_max = bw_max
+        self.bws_same_times = bws_same_times
         self.pool = pool
-        
+        self.verbose = verbose
+
         if len(multi_bw_min) == k:
             self.multi_bw_min = multi_bw_min
         elif len(multi_bw_min) == 1:
-            self.multi_bw_min = multi_bw_min*k
+            self.multi_bw_min = multi_bw_min * k
         else:
-            raise AttributeError("multi_bw_min must be either a list containing"
-            " a single entry or a list containing an entry for each of k"
-            " covariates including the intercept")
-        
+            raise AttributeError(
+                "multi_bw_min must be either a list containing"
+                " a single entry or a list containing an entry for each of k"
+                " covariates including the intercept")
+
         if len(multi_bw_max) == k:
             self.multi_bw_max = multi_bw_max
         elif len(multi_bw_max) == 1:
-            self.multi_bw_max = multi_bw_max*k
+            self.multi_bw_max = multi_bw_max * k
         else:
-            raise AttributeError("multi_bw_max must be either a list containing"
-            " a single entry or a list containing an entry for each of k"
-            " covariates including the intercept")
-        
+            raise AttributeError(
+                "multi_bw_max must be either a list containing"
+                " a single entry or a list containing an entry for each of k"
+                " covariates including the intercept")
+
         self.interval = interval
         self.tol = tol
         self.max_iter = max_iter
@@ -291,69 +304,50 @@ class Sel_BW(object):
         self.search_params['max_iter'] = max_iter
         #self._check_min_max()
 
-        if self.fixed:
-            if self.kernel == 'gaussian':
-                ktype = 1
-            elif self.kernel == 'bisquare':
-                ktype = 3
-            elif self.kernel == 'exponential':
-                ktype = 5
-            else:
-                raise TypeError('Unsupported kernel function ', self.kernel)
-        else:
-            if self.kernel == 'gaussian':
-              ktype = 2
-            elif self.kernel == 'bisquare':
-                ktype = 4
-            elif self.kernel == 'exponential':
-                ktype = 6
-            else:
-                raise TypeError('Unsupported kernel function ', self.kernel)
-
-        if ktype % 2 == 0:
-            int_score = True
-        else:
-            int_score = False
-        self.int_score = int_score #isn't this just self.fixed?
+        self.int_score = not self.fixed
 
         if self.multi:
             self._mbw()
-            self.params = self.bw[3] #params n by k
-            self.bw_gwr = self.bw[-1] #scalar
+            self.params = self.bw[3]  #params n by k
+            self.bw_init = self.bw[
+                -1]  #scalar, optimal bw from initial gwr model
         else:
             self._bw()
-        
-        self.pool=None
+
+        self.pool = None
         return self.bw[0]
-    
+
     def _bw(self):
-        if self.pool:
-            gwr_func = lambda bw: getDiag[self.criterion](GWR(self.coords, self.y, self.X_loc, bw, family=self.family, kernel=self.kernel,fixed=self.fixed, constant=self.constant).parafit(self.pool))
-        else:
-            gwr_func = lambda bw: getDiag[self.criterion](GWR(self.coords, self.y, self.X_loc, bw, family=self.family, kernel=self.kernel, fixed=self.fixed, constant=self.constant).fit(searching = True))
-        
+        gwr_func = lambda bw: getDiag[self.criterion](GWR(
+            self.coords, self.y, self.X_loc, bw, family=self.family, kernel=
+            self.kernel, fixed=self.fixed, constant=self.constant, offset=self.
+            offset, spherical=self.spherical).fit(lite=True, pool=self.pool))
+
         self._optimized_function = gwr_func
 
         if self.search_method == 'golden_section':
-            a,c = self._init_section(self.X_glob, self.X_loc, self.coords,
-                    self.constant)
-            delta = 0.38197 #1 - (np.sqrt(5.0)-1.0)/2.0
+            a, c = self._init_section(self.X_glob, self.X_loc, self.coords,
+                                      self.constant)
+            delta = 0.38197  #1 - (np.sqrt(5.0)-1.0)/2.0
             self.bw = golden_section(a, c, delta, gwr_func, self.tol,
-                    self.max_iter, self.int_score)
+                                     self.max_iter, self.int_score,
+                                     self.verbose)
         elif self.search_method == 'interval':
             self.bw = equal_interval(self.bw_min, self.bw_max, self.interval,
-                    gwr_func, self.int_score)
+                                     gwr_func, self.int_score, self.verbose)
         elif self.search_method == 'scipy':
-            self.bw_min, self.bw_max = self._init_section(self.X_glob, self.X_loc,
-                    self.coords, self.constant)
+            self.bw_min, self.bw_max = self._init_section(
+                self.X_glob, self.X_loc, self.coords, self.constant)
             if self.bw_min == self.bw_max:
-                raise Exception('Maximum bandwidth and minimum bandwidth must be distinct for scipy optimizer.')
-            self._optimize_result = minimize_scalar(gwr_func, bounds=(self.bw_min,
-                self.bw_max), method='bounded')
+                raise Exception(
+                    'Maximum bandwidth and minimum bandwidth must be distinct for scipy optimizer.'
+                )
+            self._optimize_result = minimize_scalar(
+                gwr_func, bounds=(self.bw_min, self.bw_max), method='bounded')
             self.bw = [self._optimize_result.x, self._optimize_result.fun, []]
         else:
             raise TypeError('Unsupported computational search method ',
-                    self.search_method)
+                            self.search_method)
 
     def _mbw(self):
         y = self.y
@@ -366,6 +360,7 @@ class Sel_BW(object):
         offset = self.offset
         kernel = self.kernel
         fixed = self.fixed
+        spherical = self.spherical
         coords = self.coords
         search_method = self.search_method
         criterion = self.criterion
@@ -376,20 +371,30 @@ class Sel_BW(object):
         interval = self.interval
         tol = self.tol
         max_iter = self.max_iter
-        def gwr_func(y,X,bw):
-            return GWR(coords, y,X,bw,family=family, kernel=kernel, fixed=fixed,
-                    offset=offset, constant=False, hat_matrix=False)
-        def bw_func(y,X):
-            selector = Sel_BW(coords, y,X,X_glob=[], family=family, kernel=kernel,
-                    fixed=fixed, offset=offset, constant=False)
+        bws_same_times = self.bws_same_times
+
+        def gwr_func(y, X, bw):
+            return GWR(coords, y, X, bw, family=family, kernel=kernel,
+                       fixed=fixed, offset=offset, constant=False,
+                       spherical=self.spherical, hat_matrix=False).fit(
+                           lite=True, pool=self.pool)
+
+        def bw_func(y, X):
+            selector = Sel_BW(coords, y, X, X_glob=[], family=family,
+                              kernel=kernel, fixed=fixed, offset=offset,
+                              constant=False, spherical=self.spherical)
             return selector
 
         def sel_func(bw_func, bw_min=None, bw_max=None):
-            return bw_func.search(search_method=search_method, criterion=criterion,
-                    bw_min=bw_min, bw_max=bw_max, interval=interval, tol=tol, max_iter=max_iter, pool=self.pool)
-        self.bw = multi_bw(self.init_multi, y, X, n, k, family,
-                self.tol_multi, self.max_iter_multi, self.rss_score, gwr_func,
-                bw_func, sel_func, multi_bw_min, multi_bw_max)
+            return bw_func.search(
+                search_method=search_method, criterion=criterion,
+                bw_min=bw_min, bw_max=bw_max, interval=interval, tol=tol,
+                max_iter=max_iter, pool=self.pool, verbose=False)
+
+        self.bw = multi_bw(self.init_multi, y, X, n, k, family, self.tol_multi,
+                           self.max_iter_multi, self.rss_score, gwr_func,
+                           bw_func, sel_func, multi_bw_min, multi_bw_max,
+                           bws_same_times, verbose=self.verbose)
 
     def _init_section(self, X_glob, X_loc, coords, constant):
         if len(X_glob) > 0:
@@ -411,12 +416,12 @@ class Sel_BW(object):
             c = n
         else:
             sq_dists = pdist(coords)
-            a = np.min(sq_dists)/2.0
-            c = np.max(sq_dists)*2.0
+            a = np.min(sq_dists) / 2.0
+            c = np.max(sq_dists) * 2.0
 
         if self.bw_min is not None:
             a = self.bw_min
         if self.bw_max is not None:
             c = self.bw_max
-        
+
         return a, c

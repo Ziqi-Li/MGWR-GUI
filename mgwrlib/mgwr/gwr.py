@@ -5,7 +5,7 @@ __author__ = "Taylor Oshan Tayoshan@gmail.com"
 import copy
 import numpy as np
 import numpy.linalg as la
-from scipy.stats import t,rankdata
+from scipy.stats import t
 from scipy.special import factorial
 from itertools import combinations as combo
 from spglm.family import Gaussian, Binomial, Poisson
@@ -16,11 +16,6 @@ from .diagnostics import get_AIC, get_AICc, get_BIC, corr
 from .kernels import *
 from .summary import *
 import multiprocessing as mp
-
-fk = {'gaussian': fix_gauss, 'bisquare': fix_bisquare, 'exponential': fix_exp}
-ak = {'gaussian': adapt_gauss, 'bisquare': adapt_bisquare,
-      'exponential': adapt_exp}
-
 
 class GWR(GLM):
     """
@@ -82,10 +77,9 @@ class GWR(GLM):
     spherical     : boolean
                     True for shperical coordinates (long-lat),
                     False for projected coordinates (defalut).
-                    
     hat_matrix    : boolean
                     True to store full n by n hat matrix,
-                    False to not store full hat matrix to optimize memory footprint (defalut).
+                    False to not store full hat matrix to minimize memory footprint (defalut).
 
     Attributes
     ----------
@@ -142,7 +136,7 @@ class GWR(GLM):
                     
     hat_matrix    : boolean
                     True to store full n by n hat matrix,
-                    False to not store full hat matrix to optimize memory footprint (defalut).
+                    False to not store full hat matrix to minimize memory footprint (defalut).
 
     n             : integer
                     number of observations
@@ -218,7 +212,7 @@ class GWR(GLM):
         GLM.__init__(self, y, X, family, constant=constant)
         self.constant = constant
         self.sigma2_v1 = sigma2_v1
-        self.coords = coords
+        self.coords = np.array(coords)
         self.bw = bw
         self.kernel = kernel
         self.fixed = fixed
@@ -234,44 +228,52 @@ class GWR(GLM):
         self.P = None
         self.spherical = spherical
         self.hat_matrix = hat_matrix
-    
+
     def _build_wi(self, i, bw):
 
-        if self.fixed:
-            try:
-                wi = fk[self.kernel](i, self.coords, bw, self.points, spherical=self.spherical)
-            
-            except BaseException:
-                raise  # TypeError('Unsupported kernel function  ', kernel)
-        else:
-            try:
-                wi = ak[self.kernel](i, self.coords, bw, self.points, spherical=self.spherical)
-            except BaseException:
-                raise  # TypeError('Unsupported kernel function  ', kernel)
-        
+        try:
+            wi = Kernel(i, self.coords, bw, fixed=self.fixed, function=self.kernel, points=self.points, spherical=self.spherical).kernel
+        except BaseException:
+            raise  # TypeError('Unsupported kernel function  ', kernel)
+
         return wi
-    
-    def localfit(self, i):
-        wi = self._build_wi(i,self.bw).reshape((-1, 1))
-        betas, inv_xtx_xt = _compute_betas_gwr(self.y,self.X,wi)
-        influ = np.dot(self.X[i],inv_xtx_xt[:,i])
-        predy = np.dot(self.X[i],betas)[0]
-        resid = self.y[i] - predy
-        return influ,resid,predy,betas.reshape(-1)
 
-    def parafit(self, pool):
-        m = self.X.shape[0]
-        rslt = pool.map(self.localfit, range(m))
-        reduced = list(zip(*rslt))
-        influ = np.array(reduced[0]).reshape(-1,1)
-        resid = np.array(reduced[1]).reshape(-1,1)
-        predy = np.array(reduced[2]).reshape(-1,1)
-        params = np.array(reduced[3]).reshape(-1,1)
-        return GWRResultsLite(self, resid, influ, params)
+    def _local_fit(self, i):
+        """
+        Local fitting at location i.
+        """
+        wi = self._build_wi(i,self.bw).reshape(-1, 1) #local spatial weights
+        
+        if isinstance(self.family, Gaussian):
+            betas, inv_xtx_xt = _compute_betas_gwr(self.y,self.X,wi)
+            predy = np.dot(self.X[i],betas)[0]
+            resid = self.y[i] - predy
+            influ = np.dot(self.X[i],inv_xtx_xt[:,i])
+            w = 1
 
+        elif isinstance(self.family, (Poisson, Binomial)):
+            rslt = iwls(self.y, self.X, self.family,
+                        self.offset, None, self.fit_params['ini_params'], self.fit_params['tol'],
+                        self.fit_params['max_iter'], wi=wi)
+            inv_xtx_xt = rslt[5]
+            w = rslt[3][i][0]
+            influ = np.dot(self.X[i], inv_xtx_xt[:, i]) * w
+            predy = rslt[1][i]
+            resid = self.y[i] - predy
+            betas = rslt[0]
+        
+        if self.fit_params['lite']:
+            return influ,resid,predy,betas.reshape(-1)
+        else:
+            Si = np.dot(self.X[i], inv_xtx_xt).reshape(-1)
+            tr_STS_i = np.sum(Si * Si * w * w)
+            CCT = np.diag(np.dot(inv_xtx_xt, inv_xtx_xt.T)).reshape(-1)
+            if not self.hat_matrix:
+                Si = None
+            return influ,resid,predy,betas.reshape(-1),w,Si,tr_STS_i,CCT
 
     def fit(self, ini_params=None, tol=1.0e-5, max_iter=20,
-            solve='iwls',searching = False, para=False):
+            solve='iwls', lite=False, pool=None):
         """
         Method that fits a model with a particular estimation routine.
 
@@ -292,17 +294,18 @@ class GWR(GLM):
                         Technique to solve MLE equations.
                         Default is 'iwls', meaning iteratively (
                         re)weighted least squares.
-        searching     : bool, optional
+        lite          : bool, optional
                         Whether to estimate a lightweight GWR that
                         computes the minimum diagnostics needed for
                         bandwidth selection (could speed up
                         bandwidth selection for GWR) or to estimate
                         a full GWR. Default is False.
+        pool          : A multiprocessing Pool object to enable parallel fitting; default is None.
 
         Returns
         -------
                       :
-                        If searching=True, return a GWRResult
+                        If lite=False, return a GWRResult
                         instance; otherwise, return a GWRResultLite
                         instance.
 
@@ -311,70 +314,38 @@ class GWR(GLM):
         self.fit_params['tol'] = tol
         self.fit_params['max_iter'] = max_iter
         self.fit_params['solve'] = solve
+        self.fit_params['lite'] = lite
+        
         if solve.lower() == 'iwls':
             
             if self.points is None:
                 m = self.y.shape[0]
             else:
                 m = self.points.shape[0]
-            
-            # In bandwidth selection, return GWRResultsLite
-            if searching:
-                resid = np.zeros((m, 1))
-                influ = np.zeros((m, 1))
-                params = np.zeros((m, self.k))
-                for i in range(m):
-                    wi = self._build_wi(i,self.bw).reshape((-1, 1))
-                    if isinstance(self.family, Gaussian):
-                        betas, inv_xtx_xt = _compute_betas_gwr(
-                            self.y, self.X, wi)
-                        influ[i] = np.dot(self.X[i], inv_xtx_xt[:, i])
-                        predy = np.dot(self.X[i], betas)[0]
-                        resid[i] = self.y[i] - predy
-                        params[i, :] = betas.T
-                    elif isinstance(self.family, (Poisson, Binomial)):
-                        rslt = iwls(self.y, self.X, self.family,
-                                    self.offset, None, ini_params, tol,
-                                    max_iter, wi=wi)
-                        inv_xtx_xt = rslt[5]
-                        influ[i] = np.dot(self.X[i], inv_xtx_xt[:, i]) * \
-                                   rslt[3][i][0]
-                        predy = rslt[1][i]
-                        resid[i] = self.y[i] - predy
-                        params[i, :] = rslt[0].T
-                return GWRResultsLite(self, resid, influ, params)
-            
 
+            if pool:
+                rslt = pool.map(self._local_fit, range(m)) #parallel using mp.Pool
             else:
-                params = np.zeros((m, self.k))
-                predy = np.zeros((m, 1))
-                influ = np.zeros((m, 1))
-                tr_STS = 0
-                w = np.zeros((m, 1))
+                rslt = map(self._local_fit, range(m)) #sequential
+            
+            rslt_list = list(zip(*rslt))
+            influ = np.array(rslt_list[0]).reshape(-1,1)
+            resid = np.array(rslt_list[1]).reshape(-1,1)
+            params = np.array(rslt_list[3])
+            
+            if lite:
+                return GWRResultsLite(self, resid, influ, params)
+            else:
+                predy = np.array(rslt_list[2]).reshape(-1,1)
+                w = np.array(rslt_list[-4]).reshape(-1,1)
                 if self.hat_matrix:
-                    S = np.zeros((m, self.n))
+                    S = np.array(rslt_list[-3])
                 else:
                     S = None
-                CCT = np.zeros((m, self.k))
-                for i in range(m):
-                    wi = self._build_wi(i,self.bw).reshape((-1, 1))
-                    rslt = iwls(self.y, self.X, self.family,
-                                self.offset, None, ini_params, tol,
-                                max_iter, wi=wi)
-                    params[i, :] = rslt[0].T
-                    predy[i] = rslt[1][i]
-                    w[i] = rslt[3][i]
-                    Si = np.dot(self.X[i], rslt[5])
-                    influ[i] = Si[i]
-                    if self.hat_matrix:
-                        S[i] = Si
-                    tr_STS += np.sum(Si * Si * w[i][0] * w[i][0])
-                    # dont need unless f is explicitly passed for
-                    # prediction of non-sampled points
-                    #cf = rslt[5] - np.dot(rslt[5], f)
-                    #CCT[i] = np.diag(np.dot(cf, cf.T/rslt[3]))
-                    CCT[i] = np.diag(np.dot(rslt[5], rslt[5].T))
+                tr_STS = np.sum(np.array(rslt_list[-2]))
+                CCT = np.array(rslt_list[-1])
                 return GWRResults(self, params, predy, S, CCT, influ, tr_STS, w)
+
 
     def predict(self, points, P, exog_scale=None, exog_resid=None,
                 fit_params={}):
@@ -515,7 +486,7 @@ class GWRResults(GLMResults):
                           calibration point
 
     S                   : array
-                          n*n, hat matrix if hat_matrix is set True in GWR
+                          n*n, hat matrix
 
     CCT                 : array
                           n*k, scaled variance-covariance matrix
@@ -541,7 +512,10 @@ class GWRResults(GLMResults):
 
     R2                  : float
                           R-squared for the entire model (1- RSS/TSS)
-
+                          
+    adj_R2              : float
+                          adjusted R-squared for the entire model
+                          
     aic                 : float
                           Akaike information criterion
 
@@ -597,6 +571,14 @@ class GWRResults(GLMResults):
     pDev                : float
                           local percent of deviation accounted for; analogous to
                           r-squared for GLM's
+                          
+    D2                  : float
+                          percent deviance explained for GLM, equivaleng to R2 for
+                          Gaussian.
+                          
+    adj_D2              : float
+                          adjusted percent deviance explained, equivaleng to adjusted
+                          R2 for Gaussian.
 
     mu                  : array
                           n*, flat one dimensional array of predicted mean
@@ -614,7 +596,6 @@ class GWRResults(GLMResults):
 
     def __init__(self, model, params, predy, S, CCT, influ, tr_STS=None, w=None):
         GLMResults.__init__(self, model, params, predy, w)
-        #self.W = model.W
         self.offset = model.offset
         if w is not None:
             self.w = w
@@ -624,12 +605,12 @@ class GWRResults(GLMResults):
         self.influ = influ
         self.CCT = self.cov_params(CCT, model.exog_scale)
         self._cache = {}
-    
+
     @cache_readonly
     def W(self):
         W = np.array([self.model._build_wi(i,self.model.bw) for i in range(self.n)])
         return W
-    
+
     @cache_readonly
     def resid_ss(self):
         if self.model.points is not None:
@@ -670,7 +651,7 @@ class GWRResults(GLMResults):
         """
         trace of S (hat) matrix
         """
-        return np.sum(self.influ*self.w)
+        return np.sum(self.influ)
 
     @cache_readonly
     def ENP(self):
@@ -688,7 +669,6 @@ class GWRResults(GLMResults):
             return self.tr_S
         else:
             return 2 * self.tr_S - self.tr_STS
-
 
     @cache_readonly
     def y_bar(self):
@@ -955,40 +935,6 @@ class GWRResults(GLMResults):
         tvalues[subset] = 0
         return tvalues
 
-    ###ZIQI
-    @cache_readonly
-    def pvalues(self):
-        n = self.n
-        return t.sf(np.abs(self.tvalues), n - 1) * 2
-
-    def pval_masks(self, method="None"):
-        k = self.k
-        n = self.n
-        ENP = self.ENP
-        if method == "None":
-            return (self.pvalues <= 0.05).astype(int)
-        elif method == "Bonferroni":
-            return (self.pvalues <= self.adj_alpha[1]).astype(int)
-        elif method == "Sidak":
-            adj_alpha = 1- (1 - 0.05) ** (1/(ENP/k))
-            return (self.pvalues <= adj_alpha).astype(int)
-        elif method == "FDR":
-            fdr_filter = np.empty((n,k))
-            for j in range(k):
-                a = self.pvalues[:,j]
-                rank = rankdata(a, method='min')
-                d = (n*k-ENP)/(n*k-1)
-                adj = rank * 0.05 /(n + d*(rank - n))
-                fdr_filter[:,j] = ((a <= adj).astype(int))
-            return fdr_filter.astype(int)
-        else:
-            raise NotImplementedError('Unknown method for multiple hypothesis testing correction')
-
-    ###ZIQI
-
-
-
-
     @cache_readonly
     def df_model(self):
         return self.n - self.tr_S
@@ -1018,31 +964,54 @@ class GWRResults(GLMResults):
         return None
 
     @cache_readonly
-    def null(self):
-        return None
-
-    @cache_readonly
     def llnull(self):
         return None
-
+    
+    
     @cache_readonly
     def null_deviance(self):
-        return None
+        return self.family.deviance(self.y, self.null)
+    
+    @cache_readonly
+    def global_deviance(self):
+        deviance = np.sum(self.family.resid_dev(self.y, self.mu)**2)
+        return deviance
 
     @cache_readonly
+    def D2(self):
+        """
+        Percentage of deviance explanied. Equivalent to 1 - (deviance/null deviance)
+        """
+        D2 =  1.0 - (self.global_deviance / self.null_deviance)
+        return D2
+    
+    @cache_readonly
     def R2(self):
+        """
+        Global r-squared value for a Gaussian model.
+        """
         if isinstance(self.family, Gaussian):
-            TSS = np.sum((self.y.reshape((-1, 1)) -
-                          np.mean(self.y.reshape((-1, 1))))**2)
-            RSS = np.sum((self.y.reshape((-1, 1)) -
-                          self.predy.reshape((-1, 1)))**2)
-            R2 = 1 - (RSS / TSS)
-            if R2 >= 0:
-                return R2
-            else:
-                return 0
+            return self.D2
         else:
-            raise NotImplementedError('Only available for Gaussian GWR')
+            raise NotImplementedError('R2 only for Gaussian')
+
+    @cache_readonly
+    def adj_D2(self):
+        """
+        Adjusted percentage of deviance explanied.
+        """
+        adj_D2 = 1 - (1 - self.D2) * (self.n - 1)/(self.n - self.ENP - 1)
+        return adj_D2
+
+    @cache_readonly
+    def adj_R2(self):
+        """
+        Adjusted global r-squared for a Gaussian model.
+        """
+        if isinstance(self.family, Gaussian):
+            return self.adj_D2
+        else:
+            raise NotImplementedError('adjusted R2 only for Gaussian')
 
     @cache_readonly
     def aic(self):
@@ -1057,20 +1026,17 @@ class GWRResults(GLMResults):
         return get_BIC(self)
 
     @cache_readonly
-    def D2(self):
-        return None
-
-    @cache_readonly
-    def adj_D2(self):
-        return None
-
-    @cache_readonly
     def pseudoR2(self):
         return None
 
     @cache_readonly
     def adj_pseudoR2(self):
         return None
+
+    @cache_readonly
+    def pvalues(self):
+        n = self.n
+        return t.sf(np.abs(self.tvalues), n - 1) * 2
 
     @cache_readonly
     def conf_int(self):
@@ -1097,8 +1063,9 @@ class GWRResults(GLMResults):
 
         """
         x = self.X
+        w = self.W
         nvar = x.shape[1]
-        nrow = self.n
+        nrow = len(w)
         if self.model.constant:
             ncor = (((nvar - 1)**2 + (nvar - 1)) / 2) - (nvar - 1)
             jk = list(combo(range(1, nvar), 2))
@@ -1149,7 +1116,7 @@ class GWRResults(GLMResults):
 
         return corr_mat, vifs_mat, local_CN, VDP
 
-    def spatial_variability(self, selector, n_iters=1000, seed=None):
+    def spatial_variability(self, selector, n_iters=1000, seed=None, pool=None):
         """
         Method to compute a Monte Carlo test of spatial variability for each
         estimated coefficient surface.
@@ -1203,13 +1170,15 @@ class GWRResults(GLMResults):
 
         init_sd = np.std(self.params, axis=0)
         SDs = []
+
         for x in range(n_iters):
+            print("MC iteration:",x,"/1000")
             temp_coords = np.random.permutation(self.model.coords)
             temp_sel.coords = temp_coords
-            temp_bw = temp_sel.search(**search_params)
+            temp_bw = temp_sel.search(**search_params, pool=pool)
             temp_gwr.bw = temp_bw
             temp_gwr.coords = temp_coords
-            temp_params = temp_gwr.fit(**fit_params).params
+            temp_params = temp_gwr.fit(**fit_params, pool=pool).params
             temp_sd = np.std(temp_params, axis=0)
             SDs.append(temp_sd)
 
@@ -1290,7 +1259,7 @@ class GWRResultsLite(object):
     @cache_readonly
     def mu(self):
         return self.y - self.resid_response
-    
+
     @cache_readonly
     def predy(self):
         return self.y - self.resid_response
@@ -1299,6 +1268,7 @@ class GWRResultsLite(object):
     def resid_ss(self):
         u = self.resid_response.flatten()
         return np.dot(u, u.T)
+
 
 
 class MGWR(GWR):
@@ -1353,6 +1323,10 @@ class MGWR(GWR):
     spherical     : boolean
                     True for shperical coordinates (long-lat),
                     False for projected coordinates (defalut).
+    hat_matrix    : boolean
+                    True for computing and storing covariate-specific
+                    hat matrices R (n,n,k) and model hat matrix S (n,n).
+                    False (default) for computing MGWR inference on the fly.
 
     Attributes
     ----------
@@ -1459,18 +1433,18 @@ class MGWR(GWR):
 
     def __init__(self, coords, y, X, selector, sigma2_v1=True,
                  kernel='bisquare',
-                 fixed=False, constant=True, spherical=False):
+                 fixed=False, constant=True, spherical=False, hat_matrix=False):
         """
         Initialize class
         """
         self.selector = selector
-        self.bws = self.selector.bw[0]
-        self.bws_log = selector.bw[1]
-        self.bw_gwr = self.selector.bw_gwr
+        self.bws = self.selector.bw[0] #final set of bandwidth
+        self.bws_history = selector.bw[1] #bws history in backfitting
+        self.bw_init = self.selector.bw_init #initialization bandiwdth
         self.family = Gaussian()  # manually set since we only support Gassian MGWR for now
-        GWR.__init__(self, coords, y, X, self.bw_gwr, family=self.family,
+        GWR.__init__(self, coords, y, X, self.bw_init, family=self.family,
                      sigma2_v1=sigma2_v1, kernel=kernel, fixed=fixed,
-                     constant=constant, spherical=spherical)
+                     constant=constant, spherical=spherical, hat_matrix=hat_matrix)
         self.selector = selector
         self.sigma2_v1 = sigma2_v1
         self.points = None
@@ -1480,76 +1454,100 @@ class MGWR(GWR):
         self.exog_scale = None
         self_fit_params = None
 
-
-    def chunk_pR(self, chunk_id=0):
+    def _chunk_compute_R(self, chunk_id=0):
+        """
+        Compute MGWR inference by chunks to reduce memory footprint.
+        """
         n=self.n
         k=self.k
         n_chunks = self.n_chunks
         chunk_size = int(np.ceil(float(n / n_chunks)))
         ENP_j = np.zeros(self.k)
         CCT = np.zeros((self.n,self.k))
-        
+
         chunk_index = np.arange(n)[chunk_id*chunk_size:(chunk_id+1)*chunk_size]
         init_pR = np.zeros((n,len(chunk_index)))
         init_pR[chunk_index,:] = np.eye(len(chunk_index))
         pR = np.zeros((n,len(chunk_index),k)) #partial R: n by chunk_size by k
         
         for i in range(n):
-            wi = self._build_wi(i, self.bw_gwr).reshape(-1,1)
-            xw = self.X*wi
-            pR[i,:,:] = ((np.linalg.inv(xw.T.dot(self.X)).dot(xw.T).dot(init_pR)).T) * self.X[i]
-        err = init_pR - np.sum(pR, axis=2)
-        del(init_pR)
+            wi = self._build_wi(i, self.bw_init).reshape(-1,1)
+            xT = (self.X * wi).T
+            P = np.linalg.solve(xT.dot(self.X), xT).dot(init_pR).T
+            pR[i,:,:] = P * self.X[i]
         
-        for iter in range(self.bws_log.shape[0]):
+        err = init_pR - np.sum(pR, axis=2) #n by chunk_size
+        del(init_pR)
+
+        for iter_i in range(self.bws_history.shape[0]):
             for j in range(k):
                 pRj_old = pR[:,:,j] + err
                 Xj = self.X[:,j]
-                
-                for chunk_Aj in range(n_chunks):
-                    chunk_index_Aj = np.arange(n)[chunk_Aj*chunk_size:(chunk_Aj+1)*chunk_size]
-                    pSi = np.empty((len(chunk_index_Aj),n))
-                    cur = 0
-                    for index in chunk_index_Aj:
-                        wi = self._build_wi(index, self.bws_log[iter,j])
+                n_chunks_Aj = n_chunks
+                chunk_size_Aj = int(np.ceil(float(n / n_chunks_Aj)))
+                for chunk_Aj in range(n_chunks_Aj):
+                    chunk_index_Aj = np.arange(n)[chunk_Aj*chunk_size_Aj
+                                                  :(chunk_Aj+1)*chunk_size_Aj]
+                    pAj = np.empty((len(chunk_index_Aj),n))
+                    for i in range(len(chunk_index_Aj)):
+                        index = chunk_index_Aj[i]
+                        wi = self._build_wi(index, self.bws_history[iter_i,j])
                         xw = Xj * wi
-                        pSi[cur,:] = Xj[index]/np.sum(xw*Xj) * xw
-                        cur += 1
-                    pR[chunk_index_Aj,:,j] = pSi.dot(pRj_old)
+                        pAj[i,:] = Xj[index]/np.sum(xw*Xj) * xw
+                    pR[chunk_index_Aj,:,j] = pAj.dot(pRj_old)
                 err = pRj_old - pR[:,:,j]
-        
+
         for j in range(k):
             CCT[:,j] += ((pR[:,:,j]/self.X[:, j].reshape(-1,1))**2).sum(axis=1)
+        for i in range(len(chunk_index)):
+            ENP_j += pR[chunk_index[i],i,:]
 
-        ENP_j += np.trace(pR[chunk_index,:],axis1=0, axis2=1)
+        if self.hat_matrix:
+            return ENP_j, CCT, pR
+        import io
+        io = io.StringIO()
+        print(chunk_id,"is done")
+        io.seek(0)
+        io.truncate(0)
         return ENP_j, CCT
 
 
-
-
     def fit(self, n_chunks=1, pool=None):
+        """
+        Compute MGWR inference by chunk to reduce memory footprint.
+        
+        Parameters
+        ----------
+
+        n_chunks      : integer, optional
+                        A number of chunks parameter to reduce memory usage.
+                        e.g. n_chunks=2 should reduce overall memory usage by 2.
+        pool          : A multiprocessing Pool object to enable parallel fitting; default is None.
+                        
+        Returns
+        -------
+                      : MGWRResults
+        """
         params = self.selector.params
         predy = np.sum(self.X * params, axis=1).reshape(-1,1)
         
-        self.n_chunks = n_chunks
-        if pool and n_chunks > 1:
-            rslt = pool.map(self.chunk_pR,range(n_chunks))
-            reduced = list(zip(*rslt))
-            ENP_j = np.sum(np.array(reduced[0]),axis=0)
-            CCT = np.sum(np.array(reduced[1]),axis=0)
+        if pool:
+            self.n_chunks = pool._processes * n_chunks
+            rslt = pool.imap(self._chunk_compute_R,range(self.n_chunks))
         else:
-            ENP_j = np.zeros(self.k)
-            CCT = np.zeros((self.n,self.k))
-            for chunk in range(n_chunks):
-                ENP_j_c, CCT_c = self.chunk_pR()
-                ENP_j += ENP_j_c
-                CCT += CCT_c
+            self.n_chunks = n_chunks
+            rslt = map(self._chunk_compute_R,tqdm(range(self.n_chunks),desc='inference'))
         
-        w = np.ones(self.n)
-        if not self.hat_matrix:
-            pR = None
-        return MGWRResults(self, params, predy, CCT, ENP_j, w, pR)
+        rslt_list = list(zip(*rslt))
+        ENP_j = np.sum(np.array(rslt_list[0]),axis=0)
+        CCT = np.sum(np.array(rslt_list[1]),axis=0)
 
+        w = np.ones(self.n)
+        if self.hat_matrix:
+            R = np.hstack(rslt_list[2])
+        else:
+            R = None
+        return MGWRResults(self, params, predy, CCT, ENP_j, w, R)
 
     def predict(self):
         '''
@@ -1574,10 +1572,10 @@ class MGWRResults(GWRResults):
                           n*1, predicted y values
 
     S                   : array
-                          n*n, hat matrix
+                          n*n, model hat matrix (if MGWR(hat_matrix=True))
 
     R                   : array
-                          n*n*k, partial hat matrices for each covariate
+                          n*n*k, covariate-specific hat matrices (if MGWR(hat_matrix=True))
 
     CCT                 : array
                           n*k, scaled variance-covariance matrix
@@ -1639,10 +1637,10 @@ class MGWRResults(GWRResults):
                           covariate (k)
 
     S                   : array
-                          n*n, hat matrix
+                          n*n, model hat matrix (if MGWR(hat_matrix=True))
 
     R                   : array
-                          n*n*k, partial hat matrices for each covariate
+                          n*n*k, covariate-specific hat matrices (if MGWR(hat_matrix=True))
 
     CCT                 : array
                           n*k, scaled variance-covariance matrix
@@ -1678,6 +1676,9 @@ class MGWRResults(GWRResults):
 
     R2                  : float
                           R-squared for the entire model (1- RSS/TSS)
+                          
+    adj_R2              : float
+                          adjusted R-squared for the entire model
 
     aic                 : float
                           Akaike information criterion
@@ -1725,15 +1726,16 @@ class MGWRResults(GWRResults):
         Initialize class
         """
         self.ENP_j = ENP_j
-        GWRResults.__init__(self, model, params, predy, None, CCT, None, w)
         self.R = R
-
+        GWRResults.__init__(self, model, params, predy, None, CCT, None, w)
+        if model.hat_matrix:
+            self.S = np.sum(self.R, axis=2)
         self.predy = predy
-    
+
     @cache_readonly
     def tr_S(self):
         return np.sum(self.ENP_j)
-    
+
     @cache_readonly
     def W(self):
         Ws = []
@@ -1741,11 +1743,7 @@ class MGWRResults(GWRResults):
             W = np.array([self.model._build_wi(i, bw_j) for i in range(self.n)])
             Ws.append(W)
         return Ws
-    '''
-    @cache_readonly
-    def ENP_j(self):
-        return [np.trace(self.R[:, :, j]) for j in range(self.R.shape[2])]
-    '''
+    
     @cache_readonly
     def adj_alpha_j(self):
         """
@@ -1832,35 +1830,6 @@ class MGWRResults(GWRResults):
         tvalues[subset] = 0
         return tvalues
 
-    ###ZIQI
-    def pval_masks(self, method="None"):
-        k = self.k
-        n = self.n
-        ENP_j = np.array(self.ENP_j)
-        if method == "None":
-            return (self.pvalues <= 0.05).astype(int)
-        elif method == "Bonferroni":
-            return (self.pvalues <= self.adj_alpha_j[:,1]).astype(int)
-        elif method == "Sidak":
-            adj_alpha = 1- (1 - 0.05) ** (1/ENP_j)
-            return (self.pvalues <= adj_alpha).astype(int)
-        elif method == "FDR":
-            fdr_filter = np.empty((n,k))
-            for j in range(k):
-                a = self.pvalues[:,j]
-                rank = rankdata(a, method='min')
-                d = (n-ENP_j[j])/(n-1)
-                adj = rank * 0.05 /(n + d*(rank - n))
-                fdr_filter[:,j] = ((a <= adj).astype(int))
-            return fdr_filter.astype(int)
-        else:
-            raise NotImplementedError('Unknown method for multiple hypothesis testing correction')
-    ###ZIQI
-
-
-
-
-
     @cache_readonly
     def RSS(self):
         raise NotImplementedError(
@@ -1928,7 +1897,7 @@ class MGWRResults(GWRResults):
 
         return local_CN, VDP
 
-    def spatial_variability(self, selector, n_iters=1000, seed=None):
+    def spatial_variability(self, selector, n_iters=1000, seed=None, pool=None):
         """
         Method to compute a Monte Carlo test of spatial variability for each
         estimated coefficient surface.
@@ -1980,9 +1949,10 @@ class MGWRResults(GWRResults):
         SDs = []
 
         for x in range(n_iters):
+            print("MC iteration:",x,"/1000")
             temp_coords = np.random.permutation(self.model.coords)
             temp_sel.coords = temp_coords
-            temp_sel.search(**search_params)
+            temp_sel.search(**search_params, pool=pool)
             temp_params = temp_sel.params
             temp_sd = np.std(temp_params, axis=0)
             SDs.append(temp_sd)

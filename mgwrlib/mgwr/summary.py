@@ -5,11 +5,11 @@ from .diagnostics import get_AICc
 
 def summaryAbout(self):
     summary = '=' * 80 + '\n'
-    summary += 'MGWR Version: 1.0.1\n'
-    summary += 'Released on: 11/04/2018\n'
+    summary += 'MGWR Version: 2.0.0\n'
+    summary += 'Released on: 04/01/2019\n'
     summary += 'Source code is available at: https://github.com/pysal/mgwr\n'
     summary += 'Development Team: Ziqi Li, Taylor Oshan, Stewart Fotheringham, Wei Kang, \n'
-    summary += 'Levi Wolf, Hanchen Yu, Wei Luo, and Mehak Sachdeva\n'
+    summary += 'Levi Wolf, Hanchen Yu, and Mehak Sachdeva\n'
     summary += 'Spatial Analysis Research Center (SPARC)\n'
     summary += 'Arizona State University, Tempe, USA\n'
     return summary
@@ -28,7 +28,7 @@ def summaryModel(self,diag):
     elif diag.isGWR and diag.GWRVarSTD:
         summary += "%-65s %14s\n" % ('Variable standardization:', diag.GWRVarSTD)
 
-    summary += "%-65s %14s\n\n" % ('Total runtime:', str(diag.end_t - diag.begin_t).split('.', 2)[0])
+    summary += "%-50s %29s\n\n" % ('Total runtime:', str(diag.end_t - diag.begin_t).split('.', 2)[0])
     return summary
 
 def summaryGLM(self,diag):
@@ -78,7 +78,7 @@ def summaryGWR(self,diag):
         summary += "%-59s %20s\n" % ('Spatial kernel:', 'Adaptive ' + self.model.kernel)
 
     summary += "%-59s %20s\n" % ('Criterion for optimal bandwidth:', diag.criterion)
-    summary += "%-65s %14s\n" % ('Multiple comparison correction:', diag.mcc)
+    #summary += "%-65s %14s\n" % ('Multiple comparison correction:', diag.mcc)
     summary += "%-67s %12.3f\n" % ('Bandwidth used:', self.model.bw)
 
     summary += "\n%s\n" % ('Diagnostic Information')
@@ -93,15 +93,17 @@ def summaryGWR(self,diag):
         summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
         summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
         summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
-        summary += "%-67s %12.3f\n" % ('R2:', self.R2)
+        summary += "%-67s %12.3f\n" % ('R2:', self.D2)
+        summary += "%-67s %12.3f\n" % ('Adj. R2:', self.adj_D2)
     else:
         summary += "%-67s %12.3f\n" % ('Effective number of parameters (trace(S)):', self.tr_S)
         summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
-        summary += "%-67s %12.3f\n" % ('Log-likelihood:', self.llf)
+        summary += "%-67s %12.3f\n" % ('Deviance:', self.global_deviance)
         summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
         summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
         summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
-        #summary += "%-60s %12.6f\n" % ('Percent deviance explained:', 0)
+        summary += "%-67s %12.3f\n" % ('Percent deviance explained:', self.D2)
+        summary += "%-67s %12.3f\n" % ('Adj. percent deviance explained:', self.adj_D2)
 
 
     summary += "%-67s %12.3f\n" % ('Adj. alpha (95%):', self.adj_alpha[1])
@@ -129,10 +131,8 @@ def summaryGWR(self,diag):
 
 def summaryMGWR(self,diag):
     
-    #XNames = ["X"+str(i) for i in range(self.k)]
-    
     summary = ''
-    summary += "%s\n" %('Multi-Scale Geographically Weighted Regression (MGWR) Results')
+    summary += "%s\n" %('Multiscale Geographically Weighted Regression (MGWR) Results')
     summary += '-' * 80 + '\n'
     
     if self.model.spherical:
@@ -154,7 +154,7 @@ def summaryMGWR(self,diag):
 
     summary += "%-59s %20s\n" % ('Termination criterion for MGWR:', '{:.1e}'.format(self.model.selector.tol_multi))
 
-    summary += "%-65s %14s\n" % ('Multiple comparison correction:', diag.mcc)
+    #summary += "%-65s %14s\n" % ('Multiple comparison correction:', diag.mcc)
 
     summary += "%-59s %20d\n\n" % ('Number of iterations used:', diag.selector.bw[1].shape[0])
 
@@ -178,13 +178,13 @@ def summaryMGWR(self,diag):
     summary += "%-67s %12.3f\n" % ('Residual sum of squares:', self.resid_ss)
     summary += "%-67s %12.3f\n" % ('Effective number of parameters (trace(S)):', self.tr_S)
     summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
-    
     summary += "%-67s %12.3f\n" % ('Sigma estimate:', np.sqrt(self.sigma2))
     summary += "%-67s %12.3f\n" % ('Log-likelihood:', self.llf)
     summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
     summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
     summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
-    summary += "%-67s %12.3f\n" % ('R2:', self.R2)
+    summary += "%-67s %12.3f\n" % ('R2:', self.D2)
+    summary += "%-67s %12.3f\n" % ('Adj. R2:', self.adj_D2)
 
     summary += "\n%s\n" % ('Summary Statistics For MGWR Parameter Estimates')
     summary += '-' * 80 + '\n'
