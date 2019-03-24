@@ -9,65 +9,65 @@ Arizona State University, Tempe, USA
 ================================================================================
 Model type:                                                             Gaussian
 Number of observations:                                                     1000
-Number of covariates:                                                          8
+Number of covariates:                                                          4
 Dependent variable:                                                        Y_new
 Variable standardization:                                                     On
-Total runtime:                                                           0:00:02
+Total runtime:                                                           0:00:17
 
 Global Regression Results
 --------------------------------------------------------------------------------
-Residual sum of squares:                                                 972.972
-Log-likelihood:                                                        -1405.239
-AIC:                                                                    2826.477
-AICc:                                                                   2828.659
-R2:                                                                        0.027
-Adj. R2:                                                                   0.020
+Residual sum of squares:                                                 976.388
+Log-likelihood:                                                        -1406.991
+AIC:                                                                    2821.982
+AICc:                                                                   2824.043
+R2:                                                                        0.024
+Adj. R2:                                                                   0.021
 
 Variable                                   Est.         SE  t(Est/SE)    p-value
 ------------------------------------ ---------- ---------- ---------- ----------
 Intercept                                -0.000      0.031     -0.000      1.000
-X3                                       -0.017      0.035     -0.470      0.638
-X4                                       -0.080      0.036     -2.234      0.026
-X5                                       -0.043      0.035     -1.218      0.223
-X6                                        0.039      0.035      1.124      0.261
-X7                                        0.031      0.036      0.858      0.391
-X8                                       -0.030      0.036     -0.822      0.411
-X9                                       -0.098      0.036     -2.728      0.006
+X0                                       -0.000      0.034     -0.004      0.997
+X1                                       -0.018      0.034     -0.521      0.603
+X2                                       -0.146      0.034     -4.249      0.000
 
-Geographically Weighted Regression (GWR) Results
+Multiscale Geographically Weighted Regression (MGWR) Results
 --------------------------------------------------------------------------------
 Coordinates type:                                                      Projected
 Spatial kernel:                                                Adaptive bisquare
 Criterion for optimal bandwidth:                                            AICc
-Bandwidth used:                                                          284.000
+Score of change (SOC) type:                                          Smoothing f
+Termination criterion for MGWR:                                          1.0e-05
+Number of iterations used:                                                     7
+
+MGWR bandwidths
+--------------------------------------------------------------------------------
+Variable                  Bandwidth      ENP_j   Adj t-val(95%)   Adj alpha(95%)
+Intercept                   999.000      1.829            2.210            0.027
+X0                           72.000     37.241            3.216            0.001
+X1                           90.000     29.373            3.146            0.002
+X2                          254.000      9.636            2.801            0.005
 
 Diagnostic Information
 --------------------------------------------------------------------------------
-Residual sum of squares:                                                 789.500
-Effective number of parameters (trace(S)):                                73.770
-Degree of freedom (n - trace(S)):                                        926.230
-Sigma estimate:                                                            0.923
-Log-likelihood:                                                        -1300.761
-AIC:                                                                    2751.061
-AICc:                                                                   2763.320
-BIC:                                                                    3118.012
-R2:                                                                        0.210
-Adj. R2:                                                                   0.148
-Adj. alpha (95%):                                                          0.005
-Adj. critical t value (95%):                                               2.787
+Residual sum of squares:                                                 607.362
+Effective number of parameters (trace(S)):                                78.080
+Degree of freedom (n - trace(S)):                                        921.920
+Sigma estimate:                                                            0.812
+Log-likelihood:                                                        -1169.623
+AIC:                                                                    2497.406
+AICc:                                                                   2511.174
+BIC:                                                                    2885.511
+R2:                                                                        0.393
+Adj. R2:                                                                   0.341
 
-Summary Statistics For GWR Parameter Estimates
+Summary Statistics For MGWR Parameter Estimates
 --------------------------------------------------------------------------------
 Variable                        Mean        STD        Min     Median        Max
 --------------------      ---------- ---------- ---------- ---------- ----------
-Intercept                     -0.000      0.066     -0.114     -0.006      0.165
-X3                            -0.029      0.102     -0.294     -0.019      0.235
-X4                            -0.074      0.135     -0.309     -0.072      0.189
-X5                            -0.053      0.118     -0.408     -0.026      0.220
-X6                             0.041      0.081     -0.117      0.043      0.233
-X7                             0.023      0.061     -0.102      0.023      0.166
-X8                            -0.023      0.104     -0.289     -0.004      0.183
-X9                            -0.123      0.095     -0.355     -0.091      0.023
+Intercept                     -0.020      0.016     -0.045     -0.021      0.006
+X0                             0.016      0.380     -0.810      0.029      0.822
+X1                            -0.016      0.215     -0.537     -0.025      0.534
+X2                            -0.125      0.176     -0.455     -0.125      0.252
 ================================================================================
 Acknowledgement:
 We acknowledge the support of the National Science Foundation under Award 1758786 

@@ -22,6 +22,7 @@ import multiprocessing as mp
 #from .map import *
 from time import sleep
 import logging
+import psutil
 from io import StringIO
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -1109,7 +1110,6 @@ class Ui_Dialog(object):
                 self.family = Binomial()
 
             #MGWR Advanced Settings
-
             self.MGWRVarSTD = self.advMGWRUI.varSTD
             self.GWRVarSTD = self.advGWRUI.varSTD
 
@@ -1303,6 +1303,8 @@ class Ui_Dialog(object):
                     tol_multi=self.tol_multi,
                     pool=self.pool,
                     verbose=True)
+                print("Computing inference...")
+                suggested_n_chunks = int(np.ceil(1.5 * (self.selector.X_loc.shape[0])**2*8*self.selector.X_loc.shape[1]/psutil.virtual_memory().available))
                 self.results = MGWR(
                     self.coords,
                     self.y,
@@ -1312,7 +1314,7 @@ class Ui_Dialog(object):
                     fixed=self.fixed,
                     constant=self.constant,
                     spherical=self.coorType).fit(
-                        n_chunks=1, pool=self.pool)
+                        n_chunks=suggested_n_chunks, pool=self.pool)
 
                 if self.mcTest != "Off":
                     print("Starting spatial variability test")

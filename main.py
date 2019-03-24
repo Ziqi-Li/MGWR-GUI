@@ -6,16 +6,14 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-
-
 if __name__ == "__main__":
     import sys, time, os
-    import time
+    import psutil
     from src.gui import Ui_Dialog
-    from PyQt5.QtCore import Qt,QSize
-    from PyQt5.QtGui import QPixmap,QIcon
+    from PyQt5.QtCore import Qt, QSize
+    from PyQt5.QtGui import QPixmap, QIcon
     import multiprocessing as mp
-    from PyQt5.QtWidgets import QApplication,QSplashScreen,QProgressBar,QDialog
+    from PyQt5.QtWidgets import QApplication, QSplashScreen, QProgressBar, QDialog
 
     def resource_path(relative_path):
         if hasattr(sys, '_MEIPASS'):
@@ -30,14 +28,13 @@ if __name__ == "__main__":
     app.setStyle('mac')
 
     app_icon = QIcon()
-    app_icon.addFile(resource_path('img/MGWR16.png'), QSize(16,16))
-    app_icon.addFile(resource_path('img/MGWR24.png'), QSize(24,24))
-    app_icon.addFile(resource_path('img/MGWR32.png'), QSize(32,32))
-    app_icon.addFile(resource_path('img/MGWR48.png'), QSize(48,48))
-    app_icon.addFile(resource_path('img/MGWR64.png'), QSize(64,64))
-    app_icon.addFile(resource_path('img/MGWR128.png'), QSize(128,128))
+    app_icon.addFile(resource_path('img/MGWR16.png'), QSize(16, 16))
+    app_icon.addFile(resource_path('img/MGWR24.png'), QSize(24, 24))
+    app_icon.addFile(resource_path('img/MGWR32.png'), QSize(32, 32))
+    app_icon.addFile(resource_path('img/MGWR48.png'), QSize(48, 48))
+    app_icon.addFile(resource_path('img/MGWR64.png'), QSize(64, 64))
+    app_icon.addFile(resource_path('img/MGWR128.png'), QSize(128, 128))
     app.setWindowIcon(app_icon)
-
 
     # Create and display the splash screen
     splash_pix = QPixmap(resource_path('img/Group.png'))
@@ -46,8 +43,9 @@ if __name__ == "__main__":
     splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
     # adding progress bar
     progressBar = QProgressBar(splash)
-    progressBar.setGeometry(splash.width()/10, 8.8*splash.height()/10,
-                            9*splash.width()/10, splash.height()/10)
+    progressBar.setGeometry(splash.width() / 10, 8.8 * splash.height() / 10,
+                            9 * splash.width() / 10,
+                            splash.height() / 10)
     splash.setMask(splash_pix.mask())
 
     splash.show()
@@ -59,9 +57,10 @@ if __name__ == "__main__":
 
     #Initiate Main Dialog
     Dialog = QDialog()
-    Dialog.setWindowFlags(Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint)
+    Dialog.setWindowFlags(Qt.WindowMinimizeButtonHint
+                          | Qt.WindowCloseButtonHint)
     ui = Ui_Dialog()
-    pool = mp.Pool()
+    pool = mp.Pool(psutil.cpu_count() - 1)
     ui.setupUi(Dialog, pool)
     #Dialog.setFixedSize(Dialog.size())
     ui.addActionsToUI()
