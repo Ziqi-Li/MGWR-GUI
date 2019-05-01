@@ -810,7 +810,7 @@ class Ui_Dialog(object):
         except Exception as e:
             error_dialog = QtWidgets.QErrorMessage()
             error_dialog.showMessage(
-                'Something went wrong when openning data. Please double check.'
+                'Something went wrong when opening data. Please double check.'
             )
             error_dialog.exec_()
             f = open('log.txt', 'w')
@@ -830,7 +830,7 @@ class Ui_Dialog(object):
         except:
             error_dialog = QtWidgets.QErrorMessage()
             error_dialog.showMessage(
-                'Something went wrong when openning data. Please double check.'
+                'Something went wrong when opening data. Please double check.'
             )
             error_dialog.exec_()
 
@@ -1139,10 +1139,15 @@ class Ui_Dialog(object):
                 self.locollinear = self.advGWRUI.locollinear
                 self.mcc = "Bonferroni"
 
-            if self.initBeta == "GWR estimate":
+            if self.initBeta == "GWR estimates":
                 self.init_multi = True
+                self.init_multi_bw = None
             else:
                 self.init_multi = False
+                if self.fixed:
+                    self.init_multi_bw = np.inf
+                else:
+                    self.init_multi_bw = self.y.shape[0]
 
             if self.SOC == "SOC-f":
                 self.rss_score = False
@@ -1301,6 +1306,7 @@ class Ui_Dialog(object):
                     criterion=self.criterion,
                     rss_score=self.rss_score,
                     tol_multi=self.tol_multi,
+                    init_multi=self.init_multi_bw,
                     pool=self.pool,
                     verbose=True)
                 print("Computing inference...")
@@ -1333,7 +1339,7 @@ class Ui_Dialog(object):
 
         except Exception as err:
             #error_dialog = QtWidgets.QErrorMessage()
-            #error_dialog.showMessage('Something went wrong when openning data. Please double check.')
+            #error_dialog.showMessage('Something went wrong when opening data. Please double check.')
             #error_dialog.exec_()
             #logging.basicConfig(filename='mgwr.log', level=logging.DEBUG)
 

@@ -208,7 +208,7 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score, gwr_func,
             bw_class = bw_func(temp_y, temp_X)
 
             if np.all(bw_stable_counter == bws_same_times):
-                #If in backfitting, all bws not changing in bws_same_times (default 3) iterations
+                #If in backfitting, all bws not changing in bws_same_times (default 5) iterations
                 bw = bws[j]
             else:
                 bw = sel_func(bw_class, multi_bw_min[j], multi_bw_max[j])
