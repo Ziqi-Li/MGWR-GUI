@@ -5,8 +5,8 @@ from .diagnostics import get_AICc
 
 def summaryAbout(self):
     summary = '=' * 80 + '\n'
-    summary += 'MGWR Version: 2.0.0\n'
-    summary += 'Released on: 04/01/2019\n'
+    summary += 'MGWR Version: 2.1.0\n'
+    summary += 'Released on: 10/07/2019\n'
     summary += 'Source code is available at: https://github.com/pysal/mgwr\n'
     summary += 'Development Team: Ziqi Li, Taylor Oshan, Stewart Fotheringham, Wei Kang, \n'
     summary += 'Levi Wolf, Hanchen Yu, and Mehak Sachdeva\n'
@@ -90,7 +90,7 @@ def summaryGWR(self,diag):
         summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
         summary += "%-67s %12.3f\n" % ('Sigma estimate:', np.sqrt(self.sigma2))
         summary += "%-67s %12.3f\n" % ('Log-likelihood:', self.llf)
-        summary += "%-67s %12.3f\n" % ('Degreen of Dependency:', self.DoD)
+        summary += "%-67s %12.3f\n" % ('Degree of Dependency (DoD):', self.DoD)
         summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
         summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
         summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
@@ -186,7 +186,7 @@ def summaryMGWR(self,diag):
     summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
     summary += "%-67s %12.3f\n" % ('Sigma estimate:', np.sqrt(self.sigma2))
     summary += "%-67s %12.3f\n" % ('Log-likelihood:', self.llf)
-    summary += "%-67s %12.3f\n" % ('Degreen of Dependency:', self.DoD)
+    summary += "%-67s %12.3f\n" % ('Degree of Dependency (DoD):', self.DoD)
     summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
     summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
     summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
@@ -208,5 +208,4 @@ def summaryACK(self):
     summary += 'We acknowledge the support of the National Science Foundation under Award 1758786 \nfrom the Geography and Spatial Sciences Program to A. S. Fotheringham which \nenabled this software to be written and made freely available.\n'
     summary += '=' * 80 + '\n'
     return summary
-
 

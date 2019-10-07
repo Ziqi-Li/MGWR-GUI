@@ -1045,7 +1045,7 @@ class GWRResults(GLMResults):
     @cache_readonly
     def DoD(self):
         #Degree of Dependency
-        return (self.model.m*self.k - self.ENP)/(self.model.m*self.k - self.k)
+        return (np.log(self.model.m*self.k) - np.log(self.ENP))/(np.log(self.model.m*self.k) - np.log(self.k))
         
     @cache_readonly
     def pseudoR2(self):
@@ -1902,7 +1902,7 @@ class MGWRResults(GWRResults):
     
     @cache_readonly
     def DoD_j(self):
-        return [(self.model.m - enp_j)/(self.model.m - 1) for enp_j in self.ENP_j]
+        return [(np.log(self.model.m) - np.log(enp_j))/(np.log(self.model.m) - np.log(1)) for enp_j in self.ENP_j]
 
     @cache_readonly
     def predictions(self):
