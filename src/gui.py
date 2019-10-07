@@ -357,8 +357,6 @@ class Ui_Dialog(object):
         self.shapeBox.setFont(font)
         self.shapeBox.setObjectName("shapeBox")
         self.shapeBox.addItem("")
-        self.shapeBox.addItem("")
-        self.shapeBox.addItem("")
         self.horizontalLayout_3.addWidget(self.shapeBox)
         self.gridLayout_16.addLayout(self.horizontalLayout_3, 0, 0, 1, 1)
         self.gridLayout_3.addWidget(self.kernelDropdownGrou, 3, 0, 1, 1)
@@ -618,8 +616,8 @@ class Ui_Dialog(object):
         self.fixedBox.setItemText(0, _translate("Dialog", "Adaptive"))
         self.fixedBox.setItemText(1, _translate("Dialog", "Fixed"))
         self.shapeBox.setItemText(0, _translate("Dialog", "Bisquare"))
-        self.shapeBox.setItemText(1, _translate("Dialog", "Gaussian"))
-        self.shapeBox.setItemText(2, _translate("Dialog", "Exponential"))
+        #self.shapeBox.setItemText(1, _translate("Dialog", "Gaussian"))
+        #self.shapeBox.setItemText(2, _translate("Dialog", "Exponential"))
         self.groupBox_9.setTitle(_translate("Dialog", "Bandwidth Searching"))
         self.bwDropdown.setItemText(0, _translate("Dialog", "Golden Section"))
         self.bwDropdown.setItemText(1, _translate("Dialog", "Interval Search"))
@@ -749,7 +747,8 @@ class Ui_Dialog(object):
         self.bwMax.setValidator(validator)
         self.bwInterval.setValidator(validator)
         self.bwPreDefined.setValidator(validator)
-
+        
+        self.fixedBox.currentIndexChanged.connect(self.changeKernel)
         self.bwDropdown.currentIndexChanged.connect(self.changeSearchMethod)
         self.modelTypeDropdown.currentIndexChanged.connect(self.modelChanged)
 
@@ -876,6 +875,16 @@ class Ui_Dialog(object):
     def deGreyOutLineEdit(self, lineEdit):
         lineEdit.setStyleSheet("")
         lineEdit.setDisabled(False)
+        
+    def changeKernel(self, index):
+        #adaptive
+        if index == 0:
+            self.shapeBox.clear()
+            self.shapeBox.addItem("Bisquare")
+        #fixed
+        else:
+            self.shapeBox.clear()
+            self.shapeBox.addItem("Gaussian")
 
     def changeSearchMethod(self, index):
         #golden section
@@ -950,8 +959,10 @@ class Ui_Dialog(object):
 
         self.modelTypeDropdown.clear()
         self.modelTypeDropdown.addItem("Gaussian")
-        self.bwDropdown.removeItem(1)
-        self.bwDropdown.removeItem(1)
+        
+        self.bwDropdown.clear()
+        self.bwDropdown.addItem("Golden Section")
+        self.bwDropdown.addItem("Interval Search")
 
         self.isMGWR = True
         self.isGWR = False
@@ -1228,6 +1239,9 @@ class Ui_Dialog(object):
     def runGWR(self):
         self.begin_t = datetime.now()
         print("Started at: ", str(self.begin_t).split('.', 2)[0])
+        
+        self.glm_rslt = GLM(self.y,self.X, constant=self.constant,family=self.family,offset = self.offset).fit()
+        
         try:
             if self.isGWR:
                 print("Running GWR...")
@@ -1301,14 +1315,46 @@ class Ui_Dialog(object):
                     multi=True,
                     constant=self.constant,
                     spherical=self.coorType)
-                self.bws = self.selector.search(
-                    search_method='golden_section',
-                    criterion=self.criterion,
-                    rss_score=self.rss_score,
-                    tol_multi=self.tol_multi,
-                    init_multi=self.init_multi_bw,
-                    pool=self.pool,
-                    verbose=True)
+                    
+                if self.search == 'golden_section':
+                    self.bws = self.selector.search(
+                        search_method='golden_section',
+                        criterion=self.criterion,
+                        rss_score=self.rss_score,
+                        tol_multi=self.tol_multi,
+                        init_multi=self.init_multi_bw,
+                        pool=self.pool,
+                        verbose=True)
+                        
+                elif self.search == 'interval':
+                    min = int(float(self.bwMin.text()))
+                    max = int(float(self.bwMax.text()))
+                    step = int(float(self.bwInterval.text()))
+                    if not self.init_multi_bw:
+                        self.init_multi_bw = Sel_BW(
+                                                self.coords,
+                                                self.y,
+                                                self.X,
+                                                kernel=self.kernel,
+                                                fixed=self.fixed,
+                                                family=self.family,
+                                                offset=self.offset,
+                                                constant=self.constant,
+                                                spherical=self.coorType).search(
+                                                    search_method="interval",interval=step,
+                                                    bw_min=min,bw_max=max)
+                    self.bws = self.selector.search(
+                        search_method='interval',
+                        criterion=self.criterion,
+                        rss_score=self.rss_score,
+                        tol_multi=self.tol_multi,
+                        multi_bw_min = [min],
+                        multi_bw_max = [max],
+                        interval = step,
+                        init_multi=self.init_multi_bw,
+                        pool=self.pool,
+                        verbose=True)
+                        
                 print("Computing inference...")
                 suggested_n_chunks = int(np.ceil(1.5 * (self.selector.X_loc.shape[0])**2*8*self.selector.X_loc.shape[1]/psutil.virtual_memory().available))
                 self.results = MGWR(

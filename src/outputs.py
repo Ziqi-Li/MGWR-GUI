@@ -62,14 +62,14 @@ def saveProcessToCSVMGWR(self):
 def saveBetasToCSVMGWR(self):
     resultsDF = pd.DataFrame(
         np.column_stack(
-            (self.id, self.xCoor, self.yCoor, self.y, self.results.predy,
-             self.results.resid_response, self.results.params,
-             self.results.bse, self.results.tvalues, self.results.pvalues)))
+            (self.id, self.xCoor, self.yCoor, self.y, self.glm_rslt.resid_response, self.results.predy,
+             self.results.resid_response, self.results.localR2,self.results.params,
+             self.results.bse, self.results.tvalues, self.results.pvalues, self.results.sumW)))
     resultsDF.columns = [self.idName] + [
-        'x_coor', 'y_coor', 'y', 'yhat', 'residual'
+        'x_coor', 'y_coor', 'y', 'ols_residual','mgwr_yhat', 'mgwr_residual','localR2'
     ] + ['beta_' + x for x in self.XNames] + [
         'se_' + x for x in self.XNames
-    ] + ['t_' + x for x in self.XNames] + ['p_' + x for x in self.XNames]
+    ] + ['t_' + x for x in self.XNames] + ['p_' + x for x in self.XNames] + ['sumW_' + x for x in self.XNames]
 
     if self.locollinear != "Off":
         old_columns = resultsDF.columns
@@ -92,17 +92,17 @@ def saveBetasToCSVGWR(self):
     if isinstance(self.family, Gaussian):
         resultsDF = pd.DataFrame(
             np.column_stack(
-                (self.id, self.xCoor, self.yCoor, self.y, self.results.predy,
+                (self.id, self.xCoor, self.yCoor, self.y, self.glm_rslt.resid_response, self.results.predy,
                  self.results.resid_response, self.results.localR2,
                  self.results.influ, self.results.cooksD, self.results.params,
                  self.results.bse, self.results.tvalues,
-                 self.results.pvalues)))
+                 self.results.pvalues, self.results.sumW)))
         resultsDF.columns = [self.idName] + [
-            'x_coor', 'y_coor', 'y', 'yhat', 'residual', 'localR2', 'influ',
+            'x_coor', 'y_coor', 'y', 'ols_residual', 'gwr_yhat', 'gwr_residual', 'localR2', 'influ',
             'CooksD'
         ] + ['beta_' + x for x in self.XNames] + [
             'se_' + x for x in self.XNames
-        ] + ['t_' + x for x in self.XNames] + ['p_' + x for x in self.XNames]
+        ] + ['t_' + x for x in self.XNames] + ['p_' + x for x in self.XNames] + ['sumW']
     else:
         resultsDF = pd.DataFrame(
             np.column_stack(
@@ -112,7 +112,7 @@ def saveBetasToCSVGWR(self):
                  self.results.bse, self.results.tvalues,
                  self.results.pvalues)))
         resultsDF.columns = [self.idName] + [
-            'x_coor', 'y_coor', 'y', 'yhat', 'residual', 'pDev', 'influ',
+            'x_coor', 'y_coor', 'y', 'gwr_yhat', 'gwr_residual', 'pDev', 'influ',
             'CooksD'
         ] + ['beta_' + x for x in self.XNames] + [
             'se_' + x for x in self.XNames

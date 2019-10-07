@@ -229,6 +229,7 @@ class GWR(GLM):
         self.P = None
         self.spherical = spherical
         self.hat_matrix = hat_matrix
+        self.m = np.unique(self.coords, axis=0).shape[0]
 
     def _build_wi(self, i, bw):
 
@@ -616,6 +617,12 @@ class GWRResults(GLMResults):
         W = np.array(
             [self.model._build_wi(i, self.model.bw) for i in range(self.n)])
         return W
+    
+    @cache_readonly  
+    def sumW(self):
+        W = np.array(
+            [np.sum(self.model._build_wi(i, self.model.bw)) for i in range(self.n)])
+        return np.array(W).reshape(-1,1)
 
     @cache_readonly
     def resid_ss(self):
@@ -1034,7 +1041,12 @@ class GWRResults(GLMResults):
     @cache_readonly
     def bic(self):
         return get_BIC(self)
-
+    
+    @cache_readonly
+    def DoD(self):
+        #Degree of Dependency
+        return (self.model.m*self.k - self.ENP)/(self.model.m*self.k - self.k)
+        
     @cache_readonly
     def pseudoR2(self):
         return None
@@ -1451,7 +1463,7 @@ class MGWR(GWR):
         self.selector = selector
         self.bws = self.selector.bw[0]  #final set of bandwidth
         self.bws_history = selector.bw[1]  #bws history in backfitting
-        self.bw_init = self.selector.bw_init  #initialization bandiwdth
+        self.bw_init = self.selector.bw_init  #initialization bandwidth
         self.family = Gaussian()  # manually set since we only support Gassian MGWR for now
         GWR.__init__(self, coords, y, X, self.bw_init, family=self.family,
                      sigma2_v1=sigma2_v1, kernel=kernel, fixed=fixed,
@@ -1754,7 +1766,7 @@ class MGWRResults(GWRResults):
     @cache_readonly
     def tr_S(self):
         return np.sum(self.ENP_j)
-
+    
     @cache_readonly
     def W(self):
         Ws = []
@@ -1762,6 +1774,14 @@ class MGWRResults(GWRResults):
             W = np.array([self.model._build_wi(i, bw_j) for i in range(self.n)])
             Ws.append(W)
         return Ws
+        
+    @cache_readonly    
+    def sumW(self):
+        sumW = []
+        for bw_j in self.model.bws:
+            sum_Wj = np.array([np.sum(self.model._build_wi(i, bw_j)) for i in range(self.n)])
+            sumW.append(sum_Wj)
+        return np.array(sumW).T
     
     @cache_readonly
     def adj_alpha_j(self):
@@ -1858,16 +1878,31 @@ class MGWRResults(GWRResults):
     def TSS(self):
         raise NotImplementedError(
             'Not yet implemented for multiple bandwidths')
-
+    
     @cache_readonly
     def localR2(self):
-        raise NotImplementedError(
-            'Not yet implemented for multiple bandwidths')
+        if isinstance(self.family, Gaussian):
+            localR2 = np.zeros(shape=(self.n, 1))
+            for i in range(self.n):
+                wi = self.model._build_wi(i, self.model.bw_init)
+                y_bar = np.sum(self.y.reshape(-1, 1) * wi)/ np.sum(wi)
+                TSS = np.sum(wi.reshape(-1, 1) * (self.y.reshape(-1, 1) - y_bar)**2)
+                RSS = np.sum(wi.reshape(-1, 1) * self.resid_response.reshape(-1, 1)**2)
+                localR2[i] = 1 - RSS/TSS
+          
+            return localR2
+        
+        else:
+            raise NotImplementedError('Only applicable to Gaussian')
 
     @cache_readonly
     def y_bar(self):
         raise NotImplementedError(
             'Not yet implemented for multiple bandwidths')
+    
+    @cache_readonly
+    def DoD_j(self):
+        return [(self.model.m - enp_j)/(self.model.m - 1) for enp_j in self.ENP_j]
 
     @cache_readonly
     def predictions(self):

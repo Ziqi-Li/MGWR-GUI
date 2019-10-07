@@ -61,7 +61,7 @@ def golden_section(a, c, delta, function, tol, max_iter, int_score=False,
             dict[b] = score_b
             if verbose:
                 print("Bandwidth: ", np.round(b, 2), ", score: ",
-                      "{0:.2f}".format(score_b[0]))
+                      "{0:.2f}".format(np.ravel(score_b)[0]))
 
         if d in dict:
             score_d = dict[d]
@@ -70,7 +70,7 @@ def golden_section(a, c, delta, function, tol, max_iter, int_score=False,
             dict[d] = score_d
             if verbose:
                 print("Bandwidth: ", np.round(d, 2), ", score: ",
-                      "{0:.2f}".format(score_d[0]))
+                      "{0:.2f}".format(np.ravel(score_d)[0]))
 
         if score_b <= score_d:
             opt_val = b
@@ -133,12 +133,11 @@ def equal_interval(l_bound, u_bound, interval, function, int_score=False,
 
     score_a = function(a)
     if verbose:
-        print(score_a)
-        print("Bandwidth:", a, ", score:", "{0:.2f}".format(score_a[0]))
+        print("Bandwidth:", a, ", score:", "{0:.2f}".format(np.ravel(score_a)[0]))
 
     score_c = function(c)
     if verbose:
-        print("Bandwidth:", c, ", score:", "{0:.2f}".format(score_c[0]))
+        print("Bandwidth:", c, ", score:", "{0:.2f}".format(np.ravel(score_c)[0]))
 
     output.append((a, score_a))
     output.append((c, score_c))
@@ -153,7 +152,7 @@ def equal_interval(l_bound, u_bound, interval, function, int_score=False,
     while b < c:
         score_b = function(b)
         if verbose:
-            print("Bandwidth:", b, ", score:", "{0:.2f}".format(score_b[0]))
+            print("Bandwidth:", b, ", score:", "{0:.2f}".format(np.ravel(score_b)[0]))
         output.append((b, score_b))
 
         if score_b < opt_score:

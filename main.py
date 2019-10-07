@@ -60,7 +60,7 @@ if __name__ == "__main__":
     Dialog.setWindowFlags(Qt.WindowMinimizeButtonHint
                           | Qt.WindowCloseButtonHint)
     ui = Ui_Dialog()
-    pool = mp.Pool(psutil.cpu_count() - 1)
+    pool = mp.Pool(mp.cpu_count() - 1)
     ui.setupUi(Dialog, pool)
     #Dialog.setFixedSize(Dialog.size())
     ui.addActionsToUI()

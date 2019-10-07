@@ -33,7 +33,7 @@ def summaryModel(self,diag):
 
 def summaryGLM(self,diag):
     
-    glm_rslt = GLM(self.model.y,self.model.X,constant=False,family=self.family,offset = diag.offset).fit()
+    glm_rslt = diag.glm_rslt
 
     summary = "%s\n" %('Global Regression Results')
     summary += '-' * 80 + '\n'
@@ -90,6 +90,7 @@ def summaryGWR(self,diag):
         summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
         summary += "%-67s %12.3f\n" % ('Sigma estimate:', np.sqrt(self.sigma2))
         summary += "%-67s %12.3f\n" % ('Log-likelihood:', self.llf)
+        summary += "%-67s %12.3f\n" % ('Degreen of Dependency:', self.DoD)
         summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
         summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
         summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
@@ -160,9 +161,14 @@ def summaryMGWR(self,diag):
 
     summary += "%s\n" %('MGWR bandwidths')
     summary += '-' * 80 + '\n'
+    '''
     summary += "%-20s %14s %10s %16s %16s\n" % ('Variable', 'Bandwidth', 'ENP_j','Adj t-val(95%)','Adj alpha(95%)')
     for j in range(self.k):
         summary += "%-20s %14.3f %10.3f %16.3f %16.3f\n" % (diag.XNames[j], self.model.bws[j], self.ENP_j[j],self.critical_tval()[j],self.adj_alpha_j[j,1])
+    '''
+    summary += "%-20s %14s %10s %16s %16s\n" % ('Variable', 'Bandwidth', 'ENP_j','Adj t-val(95%)','DoD_j')
+    for j in range(self.k):
+        summary += "%-20s %14.3f %10.3f %16.3f %16.3f\n" % (diag.XNames[j], self.model.bws[j], self.ENP_j[j],self.critical_tval()[j],self.DoD_j[j])
     
     if diag.mcTest != "Off":
         summary += "\n%s\n" %('Monte Carlo Test for Spatial Variability')
@@ -180,6 +186,7 @@ def summaryMGWR(self,diag):
     summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
     summary += "%-67s %12.3f\n" % ('Sigma estimate:', np.sqrt(self.sigma2))
     summary += "%-67s %12.3f\n" % ('Log-likelihood:', self.llf)
+    summary += "%-67s %12.3f\n" % ('Degreen of Dependency:', self.DoD)
     summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
     summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
     summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
