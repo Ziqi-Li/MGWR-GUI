@@ -4,26 +4,29 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['/Users/Ziqi/Desktop/mgwr-gui/'],
+             pathex=['/Users/Ziqi/Desktop/mgwr-gui'],
              binaries=[],
-             datas=[('/Users/Ziqi/Desktop/mgwr-gui/img','img')],
+             datas=[],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
-             excludes=['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter'],
+             excludes=[],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
-             cipher=block_cipher)
+             cipher=block_cipher,
+             noarchive=False)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
+          [],
           exclude_binaries=True,
           name='main',
-          debug=True,
+          debug=False,
+          bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=False )
+          console=True )
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
@@ -31,11 +34,3 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                name='main')
-app = BUNDLE(coll,
-             name='MGWR.app',
-             icon='resources/img/MGWR.icns',
-             bundle_identifier=None,
-             info_plist={
-                'NSHighResolutionCapable': 'True'
-             }
-)
