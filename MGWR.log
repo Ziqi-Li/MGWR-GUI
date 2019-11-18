@@ -1,9 +1,9 @@
 Processing config: C:\Program Files (x86)\NSIS\nsisconf.nsh
-Processing script file: "C:\Users\Ziqi\AppData\Local\Temp\nsc4F1.tmp" (ACP)
+Processing script file: "C:\Users\Ziqi\AppData\Local\Temp\nsa197.tmp" (ACP)
 
 Processed 1 file, writing output (x86-ansi):
 
-Output: "C:\Users\Ziqi\Desktop\MGWR 2.0 for PC installer.exe"
+Output: "C:\Users\Ziqi\Desktop\MGWR 2.1 for PC installer.exe"
 Install: 4 pages (256 bytes), 2 sections (1 required) (4144 bytes), 2210 instructions (61880 bytes), 1414 strings (20890 bytes), 1 language table (306 bytes).
 Uninstall: 3 pages (256 bytes), 1 section (2072 bytes), 2118 instructions (59304 bytes), 2037 strings (61765 bytes), 1 language table (286 bytes).
 Datablock optimizer saved 321834 bytes (~0.1%).
@@ -12,9 +12,9 @@ Using lzma (compress whole) compression.
 
 EXE header size:               50176 / 36864 bytes
 Install code:                          (85868 bytes)
-Install data:                          (197188704 bytes)
+Install data:                          (197189581 bytes)
 Uninstall code+data:                   (178564 bytes)
-Compressed data:            47407701 / 197453136 bytes
-CRC (0x8CFBF696):                  4 / 4 bytes
+Compressed data:            47419575 / 197454013 bytes
+CRC (0xD01B9779):                  4 / 4 bytes
 
-Total size:                 47457881 / 197490004 bytes (24.0%)
+Total size:                 47469755 / 197490881 bytes (24.0%)
