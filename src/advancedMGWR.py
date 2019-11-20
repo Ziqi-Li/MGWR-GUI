@@ -70,6 +70,7 @@ class Ui_advMGWRDialog(object):
         self.initComboBox.addItem("")
         self.gridLayout_6.addWidget(self.initComboBox, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.groupBox_2, 1, 0, 1, 1)
+        
         self.groupBox_3 = QtWidgets.QGroupBox(advDialog)
         font = QtGui.QFont()
         font.setPointSize(9)
@@ -87,6 +88,7 @@ class Ui_advMGWRDialog(object):
         self.convComboBox.addItem("")
         self.gridLayout_7.addWidget(self.convComboBox, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.groupBox_3, 1, 1, 1, 1)
+        
         self.SOCBox_2 = QtWidgets.QGroupBox(advDialog)
         font = QtGui.QFont()
         font.setPointSize(9)
@@ -104,6 +106,7 @@ class Ui_advMGWRDialog(object):
         self.varSTDComboBox.addItem("")
         self.gridLayout_4.addWidget(self.varSTDComboBox, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.SOCBox_2, 0, 0, 1, 1)
+        
         self.groupBox_5 = QtWidgets.QGroupBox(advDialog)
         font = QtGui.QFont()
         font.setPointSize(9)
@@ -121,6 +124,25 @@ class Ui_advMGWRDialog(object):
         self.locollinearComboBox.addItem("")
         self.gridLayout_9.addWidget(self.locollinearComboBox, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.groupBox_5, 2, 1, 1, 1)
+        
+        self.groupBox_6 = QtWidgets.QGroupBox(advDialog)
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        self.groupBox_6.setFont(font)
+        self.groupBox_6.setObjectName("groupBox_6")
+        self.gridLayout_10 = QtWidgets.QGridLayout(self.groupBox_6)
+        self.gridLayout_10.setObjectName("gridLayout_9")
+        self.bwciComboBox = QtWidgets.QComboBox(self.groupBox_6)
+        self.bwciComboBox.setMinimumSize(QtCore.QSize(0, 23))
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        self.bwciComboBox.setFont(font)
+        self.bwciComboBox.setObjectName("bwciComboBox")
+        self.bwciComboBox.addItem("")
+        self.bwciComboBox.addItem("")
+        self.gridLayout_10.addWidget(self.bwciComboBox, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.groupBox_6, 3, 0, 1, 1)
+        
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.resetBTN = QtWidgets.QPushButton(advDialog)
@@ -130,16 +152,17 @@ class Ui_advMGWRDialog(object):
         self.resetBTN.setFont(font)
         self.resetBTN.setObjectName("resetBTN")
         self.gridLayout_2.addWidget(self.resetBTN, 0, 0, 1, 1)
-        self.gridLayout.addLayout(self.gridLayout_2, 3, 1, 1, 1)
+        self.gridLayout.addLayout(self.gridLayout_2, 4, 1, 1, 1)
         self.applyBTN = QtWidgets.QPushButton(advDialog)
         self.applyBTN.setMinimumSize(QtCore.QSize(0, 30))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.applyBTN.setFont(font)
         self.applyBTN.setObjectName("applyBTN")
-        self.gridLayout.addWidget(self.applyBTN, 3, 0, 1, 1)
+        self.gridLayout.addWidget(self.applyBTN, 4, 0, 1, 1)
         self.gridLayout_3.addLayout(self.gridLayout, 0, 0, 1, 1)
 
+        
         self.advDialog = advDialog
         self.varSTD = "On"
         self.mcTest = "Off"
@@ -147,6 +170,7 @@ class Ui_advMGWRDialog(object):
         self.soc = "SOC-f"
         self.init = "GWR estimates"
         self.converg = "1e-5"
+        self.bw_ci = "Off"        
         #self.mcc = "None"
 
         self.retranslateUi(advDialog)
@@ -182,6 +206,11 @@ class Ui_advMGWRDialog(object):
             _translate("advDialog", "Local collinearity diagnostics"))
         self.locollinearComboBox.setItemText(0, _translate("advDialog", "Off"))
         self.locollinearComboBox.setItemText(1, _translate("advDialog", "On"))
+        
+        self.groupBox_6.setTitle(_translate("advDialog", "Bandwidths confidence intervals"))
+        self.bwciComboBox.setItemText(0, _translate("advDialog", "Off"))
+        self.bwciComboBox.setItemText(1, _translate("advDialog", "On"))       
+        
         self.resetBTN.setText(_translate("advDialog", "Reset"))
         self.applyBTN.setText(_translate("advDialog", "Apply"))
 
@@ -216,6 +245,12 @@ class Ui_advMGWRDialog(object):
             self.convComboBox.setCurrentIndex(0)
         else:
             self.convComboBox.setCurrentIndex(1)
+                
+        if self.bw_ci == "Off":
+            self.bwciComboBox.setCurrentIndex(0)
+        else:
+            self.bwciComboBox.setCurrentIndex(1)
+        
         '''
         if self.mcc == "None":
             self.mccComboBox.setCurrentIndex(0)
@@ -238,6 +273,7 @@ class Ui_advMGWRDialog(object):
         self.converg = self.convComboBox.currentText()
         self.locollinear = self.locollinearComboBox.currentText()
         self.mcTest = self.mcComboBox.currentText()
+        self.bw_ci = self.bwciComboBox.currentText()
         #self.mcc = self.mccComboBox.currentText()
 
         self.advDialog.close()
@@ -249,4 +285,5 @@ class Ui_advMGWRDialog(object):
         self.SOCComboBox.setCurrentIndex(0)
         self.initComboBox.setCurrentIndex(0)
         self.convComboBox.setCurrentIndex(0)
+        self.bwciComboBox.setCurrentIndex(0)
         #self.mccComboBox.setCurrentIndex(0)

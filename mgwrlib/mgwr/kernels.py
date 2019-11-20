@@ -73,7 +73,9 @@ class Kernel(object):
         elif self.function == 'quartic':
             return (15. / 16) * (1 - zs**2)**2
         elif self.function == 'gaussian':
-            return np.exp(-0.5 * (zs*2.45)**2)
+            return np.exp(-0.5 * (zs)**2)
+        elif self.function == 'gui-gaussian':
+            return np.exp(-0.5 * (2.45*zs)**2)
         elif self.function == 'bisquare':
             return (1 - (zs)**2)**2
         elif self.function == 'exponential':

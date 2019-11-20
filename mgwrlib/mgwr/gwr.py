@@ -1067,6 +1067,32 @@ class GWRResults(GLMResults):
     @cache_readonly
     def use_t(self):
         return None
+    
+    #Li et al. (2020) Annals of AAG
+    def get_bws_intervals(self, selector, pval=0.95):
+        try:
+            import pandas as pd
+        except ImportError:
+            return
+
+        #Get AICcs and associated bw from the last iteration of back-fitting and make a DataFrame
+        aiccs = pd.DataFrame(list(zip(*selector.sel_hist))[1],columns=["aicc"])
+        aiccs['bw'] = list(zip(*selector.sel_hist))[0]
+        #Sort DataFrame by the AICc values
+        aiccs = aiccs.sort_values(by=['aicc'])
+        #Calculate delta AICc
+        d_aic_ak = aiccs.aicc - aiccs.aicc.min()
+        #Calculate AICc weights
+        w_aic_ak = np.exp(-0.5*d_aic_ak) / np.sum(np.exp(-0.5*d_aic_ak))
+        aiccs['w_aic_ak'] = w_aic_ak/np.sum(w_aic_ak)
+        #Calculate cum. AICc weights
+        aiccs['cum_w_ak'] = aiccs.w_aic_ak.cumsum()
+        #Find index where the cum weights above p-val
+        index = len(aiccs[aiccs.cum_w_ak < pval]) + 1
+        #Get bw boundaries
+        interval = (aiccs.iloc[:index,:].bw.min(),aiccs.iloc[:index,:].bw.max())
+        return interval
+    
 
     def local_collinearity(self):
         """
@@ -1262,11 +1288,11 @@ class GWRResultsLite(object):
     """
 
     def __init__(self, model, resid, influ, params):
-        self.y = model.y
+        self.y = model.y.reshape(-1)
         self.family = model.family
         self.n = model.n
         self.influ = influ
-        self.resid_response = resid
+        self.resid_response = resid.reshape(-1)
         self.model = model
         self.params = params
 
@@ -1907,6 +1933,36 @@ class MGWRResults(GWRResults):
     @cache_readonly
     def predictions(self):
         raise NotImplementedError('Not yet implemented for MGWR')
+
+    #Function for getting BW intervals
+    #Li et al. (2020) Annals of AAG
+    def get_bws_intervals(self, selector, pval=0.95):
+        intervals = []
+        try:
+            import pandas as pd
+        except ImportError:
+            return
+    
+        for j in range(self.k):
+            #Get AICcs and associated bw from the last iteration of back-fitting and make a DataFrame
+            aiccs = pd.DataFrame(list(zip(*selector.sel_hist[-self.k+j]))[1],columns=["aicc"])
+            aiccs['bw'] = list(zip(*selector.sel_hist[-self.k+j]))[0]
+            #Sort DataFrame by the AICc values
+            aiccs = aiccs.sort_values(by=['aicc'])
+            #Calculate delta AICc
+            d_aic_ak = aiccs.aicc - aiccs.aicc.min()
+            #Calculate AICc weights
+            w_aic_ak = np.exp(-0.5*d_aic_ak) / np.sum(np.exp(-0.5*d_aic_ak))
+            aiccs['w_aic_ak'] = w_aic_ak/np.sum(w_aic_ak)
+            #Calculate cum. AICc weights
+            aiccs['cum_w_ak'] = aiccs.w_aic_ak.cumsum()
+            #Find index where the cum weights above p-val
+            index = len(aiccs[aiccs.cum_w_ak < pval]) + 1
+            #Get bw boundaries
+            interval = (aiccs.iloc[:index,:].bw.min(),aiccs.iloc[:index,:].bw.max())
+            intervals += [interval]
+        return intervals
+
 
     def local_collinearity(self):
         """

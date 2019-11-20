@@ -662,6 +662,7 @@ class Ui_Dialog(object):
         current_time = self.elapsedTimeFormatter(self.time)
         self.loaderUI.label_2.setText(current_time)
 
+
     def elapsedTimeFormatter(self, time):
         secs = time.elapsed() / 1000
         mins = int((secs / 60) % 60)
@@ -875,7 +876,7 @@ class Ui_Dialog(object):
     def deGreyOutLineEdit(self, lineEdit):
         lineEdit.setStyleSheet("")
         lineEdit.setDisabled(False)
-        
+    
     def changeKernel(self, index):
         #adaptive
         if index == 0:
@@ -1145,10 +1146,12 @@ class Ui_Dialog(object):
                 self.mcTest = self.advMGWRUI.mcTest
                 self.locollinear = self.advMGWRUI.locollinear
                 self.mcc = "Bonferroni"
+                self.bw_ci = self.advMGWRUI.bw_ci
             if self.isGWR:
                 self.mcTest = self.advGWRUI.mcTest
                 self.locollinear = self.advGWRUI.locollinear
                 self.mcc = "Bonferroni"
+                self.bw_ci = self.advGWRUI.bw_ci
 
             if self.initBeta == "GWR estimates":
                 self.init_multi = True
@@ -1293,12 +1296,17 @@ class Ui_Dialog(object):
                     spherical=self.coorType).fit(pool=self.pool)
 
                 if self.mcTest != "Off":
-                    print("Starting spatial variability test")
+                    print("Starting spatial variability test...")
                     self.testMCResults = self.results.spatial_variability(
                         self.selector, pool=self.pool)
 
                 if self.locollinear != "Off":
+                    print("Computing multicollinearity diagnostics...")
                     self.locollinearResults = self.results.local_collinearity()
+                
+                if self.bw_ci != "Off":
+                    print("Computing bandwidth confidence interval...")
+                    self.bw_intervals = self.results.get_bws_intervals(self.selector)
 
                 self.end_t = datetime.now()
                 outputGWR(self)
@@ -1325,7 +1333,8 @@ class Ui_Dialog(object):
                         init_multi=self.init_multi_bw,
                         pool=self.pool,
                         verbose=True)
-                        
+                    self.init_multi_bw = self.selector.bw_init
+                
                 elif self.search == 'interval':
                     min = int(float(self.bwMin.text()))
                     max = int(float(self.bwMax.text()))
@@ -1354,7 +1363,7 @@ class Ui_Dialog(object):
                         init_multi=self.init_multi_bw,
                         pool=self.pool,
                         verbose=True)
-                        
+                
                 print("Computing inference...")
                 suggested_n_chunks = int(np.ceil(1.5 * (self.selector.X_loc.shape[0])**2*8*self.selector.X_loc.shape[1]/psutil.virtual_memory().available))
                 self.results = MGWR(
@@ -1369,13 +1378,18 @@ class Ui_Dialog(object):
                         n_chunks=suggested_n_chunks, pool=self.pool)
 
                 if self.mcTest != "Off":
-                    print("Starting spatial variability test")
+                    print("Starting spatial variability test...")
                     self.testMCResults = self.results.spatial_variability(
                         self.selector, pool=self.pool)
 
                 if self.locollinear != "Off":
+                    print("Computing multicollinearity diagnostics...")
                     self.locollinearResults = self.results.local_collinearity()
-
+                
+                if self.bw_ci != "Off":
+                    print("Computing bandwidth confidence intervals...")
+                    self.bw_intervals = self.results.get_bws_intervals(self.selector)
+                
                 self.end_t = datetime.now()
                 outputMGWR(self)
 

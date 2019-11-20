@@ -5,8 +5,8 @@ from .diagnostics import get_AICc
 
 def summaryAbout(self):
     summary = '=' * 80 + '\n'
-    summary += 'MGWR Version: 2.1.0\n'
-    summary += 'Released on: 10/07/2019\n'
+    summary += 'MGWR Version: 2.2.0\n'
+    summary += 'Released on: 11/20/2019\n'
     summary += 'Source code is available at: https://github.com/pysal/mgwr\n'
     summary += 'Development Team: Ziqi Li, Taylor Oshan, Stewart Fotheringham, Wei Kang, \n'
     summary += 'Levi Wolf, Hanchen Yu, and Mehak Sachdeva\n'
@@ -80,6 +80,10 @@ def summaryGWR(self,diag):
     summary += "%-59s %20s\n" % ('Criterion for optimal bandwidth:', diag.criterion)
     #summary += "%-65s %14s\n" % ('Multiple comparison correction:', diag.mcc)
     summary += "%-67s %12.3f\n" % ('Bandwidth used:', self.model.bw)
+    if diag.bw_ci != "Off":
+        summary += "%-59s %20s\n" % ('Bandwidth confidence interval (95%):', tuple2string(diag.bw_intervals))
+
+
 
     summary += "\n%s\n" % ('Diagnostic Information')
     summary += '-' * 80 + '\n'
@@ -170,6 +174,12 @@ def summaryMGWR(self,diag):
     for j in range(self.k):
         summary += "%-20s %14.3f %10.3f %16.3f %16.3f\n" % (diag.XNames[j], self.model.bws[j], self.ENP_j[j],self.critical_tval()[j],self.DoD_j[j])
     
+    if diag.bw_ci != "Off":
+        summary += "\n%s\n" %('Bandwidth Confidence Intervals (95%)')
+        summary += '-' * 80 + '\n'
+        for j in range(self.k):
+            summary += "%-60s %20s\n" % (diag.XNames[j], tuple2string(diag.bw_intervals[j]))
+    
     if diag.mcTest != "Off":
         summary += "\n%s\n" %('Monte Carlo Test for Spatial Variability')
         summary += '-' * 80 + '\n'
@@ -208,4 +218,7 @@ def summaryACK(self):
     summary += 'We acknowledge the support of the National Science Foundation under Award 1758786 \nfrom the Geography and Spatial Sciences Program to A. S. Fotheringham which \nenabled this software to be written and made freely available.\n'
     summary += '=' * 80 + '\n'
     return summary
+
+def tuple2string(tp):
+    return "(" + str(tp[0]) + ", " + str(tp[1]) + ")"
 

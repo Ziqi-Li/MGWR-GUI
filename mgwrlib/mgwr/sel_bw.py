@@ -309,10 +309,11 @@ class Sel_BW(object):
         if self.multi:
             self._mbw()
             self.params = self.bw[3]  #params n by k
-            self.bw_init = self.bw[
-                -1]  #scalar, optimal bw from initial gwr model
+            self.sel_hist = self.bw[-2]
+            self.bw_init = self.bw[-1]  #scalar, optimal bw from initial gwr model
         else:
             self._bw()
+            self.sel_hist = self.bw[-1]
 
         self.pool = None
         return self.bw[0]
@@ -326,10 +327,10 @@ class Sel_BW(object):
         self._optimized_function = gwr_func
 
         if self.search_method == 'golden_section':
-            a, c = self._init_section(self.X_glob, self.X_loc, self.coords,
+            self.bw_min, self.bw_max = self._init_section(self.X_glob, self.X_loc, self.coords,
                                       self.constant)
             delta = 0.38197  #1 - (np.sqrt(5.0)-1.0)/2.0
-            self.bw = golden_section(a, c, delta, gwr_func, self.tol,
+            self.bw = golden_section(self.bw_min, self.bw_max, delta, gwr_func, self.tol,
                                      self.max_iter, self.int_score,
                                      self.verbose)
         elif self.search_method == 'interval':
