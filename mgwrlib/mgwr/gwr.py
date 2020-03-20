@@ -1910,10 +1910,10 @@ class MGWRResults(GWRResults):
         if isinstance(self.family, Gaussian):
             localR2 = np.zeros(shape=(self.n, 1))
             for i in range(self.n):
-                wi = self.model._build_wi(i, self.model.bw_init)
+                wi = self.model._build_wi(i, self.model.bw_init).reshape(-1, 1)
                 y_bar = np.sum(self.y.reshape(-1, 1) * wi)/ np.sum(wi)
-                TSS = np.sum(wi.reshape(-1, 1) * (self.y.reshape(-1, 1) - y_bar)**2)
-                RSS = np.sum(wi.reshape(-1, 1) * self.resid_response.reshape(-1, 1)**2)
+                TSS = np.sum(wi * (self.y.reshape(-1, 1) - y_bar)**2)
+                RSS = np.sum(wi * self.resid_response.reshape(-1, 1)**2)
                 localR2[i] = 1 - RSS/TSS
           
             return localR2
@@ -1921,6 +1921,7 @@ class MGWRResults(GWRResults):
         else:
             raise NotImplementedError('Only applicable to Gaussian')
 
+                
     @cache_readonly
     def y_bar(self):
         raise NotImplementedError(

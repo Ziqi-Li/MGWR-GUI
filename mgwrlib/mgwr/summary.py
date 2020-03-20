@@ -5,11 +5,11 @@ from .diagnostics import get_AICc
 
 def summaryAbout(self):
     summary = '=' * 80 + '\n'
-    summary += 'MGWR Version: 2.2.0\n'
-    summary += 'Released on: 11/20/2019\n'
+    summary += 'MGWR Version: 2.2.1\n'
+    summary += 'Released on: 03/20/2020\n'
     summary += 'Source code is available at: https://github.com/pysal/mgwr\n'
     summary += 'Development Team: Ziqi Li, Taylor Oshan, Stewart Fotheringham, Wei Kang, \n'
-    summary += 'Levi Wolf, Hanchen Yu, and Mehak Sachdeva\n'
+    summary += 'Levi Wolf, Hanchen Yu, Mehak Sachdeva, and Sarah Bardin\n'
     summary += 'Spatial Analysis Research Center (SPARC)\n'
     summary += 'Arizona State University, Tempe, USA\n'
     return summary
