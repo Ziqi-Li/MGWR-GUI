@@ -30,6 +30,7 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog, pool):
         Dialog.setObjectName("Dialog")
         Dialog.resize(761, 571)
+        
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -172,8 +173,9 @@ class Ui_Dialog(object):
         self.bwPreDefined.setObjectName("bwPreDefined")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.bwPreDefined)
         self.bwMin = QtWidgets.QLineEdit(self.formLayoutWidget)
-        self.bwMin.setEnabled(False)
         self.bwMin.setObjectName("bwMin")
+        self.bwMin.setEnabled(False)
+        self.bwMin.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.bwMin)
         self.bwMax = QtWidgets.QLineEdit(self.formLayoutWidget)
         self.bwMax.setEnabled(False)
@@ -330,6 +332,7 @@ class Ui_Dialog(object):
         self.label_8 = QtWidgets.QLabel(self.gridLayoutWidget_2)
         self.label_8.setObjectName("label_8")
         self.gridLayout_2.addWidget(self.label_8, 1, 0, 1, 1)
+
         self.pool = pool
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -626,31 +629,29 @@ class Ui_Dialog(object):
 
     def changeSearchMethod(self, index):
         #golden section
+        self.removeRed(self.bwMin)
+        self.removeRed(self.bwMax)
+        self.removeRed(self.bwInterval)
+        self.removeRed(self.bwPreDefined)
+
+        self.greyOutLineEdit(self.bwPreDefined)
+        self.greyOutLineEdit(self.bwInterval)
+        self.greyOutLineEdit(self.bwMax)
+        self.greyOutLineEdit(self.bwMin)
+
         if index == 0:
-            self.removeRed(self.bwMin)
-            self.removeRed(self.bwMax)
-            self.removeRed(self.bwInterval)
-            self.removeRed(self.bwPreDefined)
-            self.greyOutLineEdit(self.bwPreDefined)
-            self.greyOutLineEdit(self.bwInterval)
-            self.greyOutLineEdit(self.bwMin)
-            self.greyOutLineEdit(self.bwMax)
+            self.deGreyOutLineEdit(self.bwMin)
+            self.bwMin.setPlaceholderText("(optional)")
+            #self.bwMin.setToolTip("If not provided, the default value will be 0.1")
+            
         #interval
         elif index == 1:
-            self.removeRed(self.bwPreDefined)
-            self.greyOutLineEdit(self.bwPreDefined)
             self.deGreyOutLineEdit(self.bwInterval)
             self.deGreyOutLineEdit(self.bwMin)
             self.deGreyOutLineEdit(self.bwMax)
         #defined
         elif index == 2 and self.isGWR:
-            self.removeRed(self.bwMin)
-            self.removeRed(self.bwMax)
-            self.removeRed(self.bwInterval)
             self.deGreyOutLineEdit(self.bwPreDefined)
-            self.greyOutLineEdit(self.bwInterval)
-            self.greyOutLineEdit(self.bwMin)
-            self.greyOutLineEdit(self.bwMax)
 
     def modelChanged(self, index):
         #Gaussian
@@ -697,6 +698,9 @@ class Ui_Dialog(object):
 
         self.modelTypeDropdown.clear()
         self.modelTypeDropdown.addItem("Gaussian")
+        #New in 3.0
+        self.modelTypeDropdown.addItem("Binomial")
+        self.modelTypeDropdown.addItem("Poisson")
         
         self.bwDropdown.clear()
         self.bwDropdown.addItem("Golden Section")
@@ -777,7 +781,7 @@ class Ui_Dialog(object):
         return allSet
 
     def loadDataModel(self):
-        try:
+        if True:
             #Load Variables
             if self.idLabel.text():
                 self.id = self.data[[self.idLabel.text()]]
@@ -786,7 +790,6 @@ class Ui_Dialog(object):
                 self.id = pd.Series(np.arange(self.data.shape[0]))
                 self.idName = "id"
 
-            print(self.id)
             self.data['Intercept'] = 1
             self.yName = self.responseLabel.text()
             self.XNames = [
@@ -818,9 +821,9 @@ class Ui_Dialog(object):
 
             self.y = self.comp_data[[self.responseLabel.text()
                                      ]].values.reshape(-1, 1)
-            self.X = self.comp_data.ix[:, 2:-2].values
-            self.xCoor = self.comp_data.ix[:, -2]
-            self.yCoor = self.comp_data.ix[:, -1]
+            self.X = self.comp_data.iloc[:, 2:-2].values
+            self.xCoor = self.comp_data.iloc[:, -2]
+            self.yCoor = self.comp_data.iloc[:, -1]
 
             self.nObs = len(self.comp_data.index)
             self.nMiss = len(self.data.index) - self.nObs
@@ -852,7 +855,7 @@ class Ui_Dialog(object):
                 self.family = Gaussian()
             elif self.modelTypeDropdown.currentText() == "Poisson":
                 self.family = Poisson()
-                if self.OffsetLabel.text() is not '':
+                if self.OffsetLabel.text() != '':
                     self.offset = self.data[[self.OffsetLabel.text()
                                              ]].as_matrix().reshape(-1, 1)
             elif self.modelTypeDropdown.currentText() == "Binomial":
@@ -907,8 +910,8 @@ class Ui_Dialog(object):
 
             return True
 
-        except:
-            return False
+        #except:
+            #return False
 
     def run_onclick(self):
 
@@ -996,9 +999,15 @@ class Ui_Dialog(object):
                     constant=self.constant,
                     spherical=self.coorType)
                 if self.search == 'golden_section':
+                    if self.bwMin.text():
+                        min = int(float(self.bwMin.text()))
+                    else:
+                        min = None
+
                     print("Golden section search minimizing", self.criterion)
                     self.bw = self.selector.search(
                         search_method='golden_section',
+                        bw_min=min,
                         criterion=self.criterion,
                         pool=self.pool,
                         verbose=True)
@@ -1062,12 +1071,17 @@ class Ui_Dialog(object):
                     spherical=self.coorType)
                     
                 if self.search == 'golden_section':
+                    if self.bwMin.text():
+                        min = int(float(self.bwMin.text()))
+                    else:
+                        min = None
                     self.bws = self.selector.search(
                         search_method='golden_section',
                         criterion=self.criterion,
                         rss_score=self.rss_score,
                         tol_multi=self.tol_multi,
                         init_multi=self.init_multi_bw,
+                        multi_bw_min = [min],
                         pool=self.pool,
                         verbose=True)
                     self.init_multi_bw = self.selector.bw_init
@@ -1103,6 +1117,7 @@ class Ui_Dialog(object):
                 
                 print("Computing inference...")
                 suggested_n_chunks = int(np.ceil(1.5 * (self.selector.X_loc.shape[0])**2*8*self.selector.X_loc.shape[1]/psutil.virtual_memory().available))
+                print("suggested_n_chunks:",suggested_n_chunks)
                 self.results = MGWR(
                     self.coords,
                     self.y,
