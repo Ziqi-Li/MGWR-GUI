@@ -1531,6 +1531,7 @@ class MGWR(GWR):
         err = init_pR - np.sum(pR, axis=2)  #n by chunk_size
 
         for iter_i in range(self.bws_history.shape[0]):
+            
             for j in range(k):
                 pRj_old = pR[:, :, j] + err
                 Xj = self.X[:, j]

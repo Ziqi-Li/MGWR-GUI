@@ -5,13 +5,10 @@ from .diagnostics import get_AICc
 
 def summaryAbout(self):
     summary = '=' * 80 + '\n'
-    summary += 'MGWR Version: 2.2.1\n'
-    summary += 'Released on: 03/20/2020\n'
-    summary += 'Source code is available at: https://github.com/pysal/mgwr\n'
-    summary += 'Development Team: Ziqi Li, Taylor Oshan, Stewart Fotheringham, Wei Kang, \n'
-    summary += 'Levi Wolf, Hanchen Yu, Mehak Sachdeva, and Sarah Bardin\n'
-    summary += 'Spatial Analysis Research Center (SPARC)\n'
-    summary += 'Arizona State University, Tempe, USA\n'
+    summary += 'MGWR Version: 3.0.0\n'
+    summary += 'Released on: 07/01/2025\n'
+    summary += 'The Spatial Data Science Center (SDSC)\n'
+    summary += 'Florida State University, Tallahassee, Florida, USA\n'
     return summary
 
 def summaryModel(self,diag):
@@ -133,7 +130,6 @@ def summaryGWR(self,diag):
     return summary
 
 
-
 def summaryMGWR(self,diag):
     
     summary = ''
@@ -216,6 +212,23 @@ def summaryMGWR(self,diag):
 def summaryACK(self):
     summary = 'Acknowledgement:\n'
     summary += 'We acknowledge the support of the National Science Foundation under Award 1758786 \nfrom the Geography and Spatial Sciences Program to A. S. Fotheringham which \nenabled this software to be written and made freely available.\n'
+    summary += '=' * 80 + '\n'
+    return summary
+
+def summaryCitation(self):
+    summary = 'Suggested Citations:\n'
+    summary += '- Fotheringham, A. S., Oshan, T. M., & Li, Z. (2023). Multiscale geographically weighted regression: Theory and practice. CRC Press.\n'
+    summary += '- Fotheringham, A. S., Yang, W., & Kang, W. (2017). Multiscale geographically weighted regression (MGWR). Annals of the American Association of Geographers, 107(6), 1247-1265.\n'
+    summary += '- Fotheringham, A. S., Kao, C. L., Yu, H., Bardin, S., Oshan, T., Li, Z., ... & Luo, W. (2024). Exploring spatial context: a comprehensive bibliography of GWR and MGWR. arXiv preprint arXiv:2404.16209.\n'
+
+    summary += '=' * 80 + '\n'
+    return summary
+
+def summaryTeam(self):
+    summary = 'Development Team:\n'
+    summary += 'Ziqi Li, Mehak Sachdeva, Chen-Lun Kao, Jiajun Chang, and Stewart Fotheringham\n'
+    summary += 'Contributors:\n'
+    summary += 'Taylor Oshan, Wei Kang, Hanchen Yu, Sarah Bardin, and Levi Wolf\n'
     summary += '=' * 80 + '\n'
     return summary
 
