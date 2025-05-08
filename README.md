@@ -6,7 +6,7 @@ MGWR 2.0 is a free GUI software built upon [mgwr](https://github.com/pysal/mgwr)
 
 Current version: v2.2
 
-Please download from: [https://sgsup.asu.edu/sparc/mgwr](https://cosspp.fsu.edu/sdsc/mgwr/)
+Please download from: [https://cosspp.fsu.edu/sdsc/mgwr/](https://cosspp.fsu.edu/sdsc/mgwr/)
 
 Main Interface:
 
