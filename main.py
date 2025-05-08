@@ -51,8 +51,8 @@ if __name__ == "__main__":
     splash = QtWidgets.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
     # adding progress bar
     progressBar = QtWidgets.QProgressBar(splash)
-    progressBar.setGeometry(splash.width()/10, 9*splash.height()/10,
-                            8*splash.width()/10, splash.height()/10)
+    progressBar.setGeometry(splash.width()//10, 9*splash.height()//10,
+                            8*splash.width()//10, splash.height()//10)
     splash.setMask(splash_pix.mask())
     
     splash.show()
