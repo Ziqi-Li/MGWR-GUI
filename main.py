@@ -24,6 +24,17 @@ def resource_path(relative_path):
     return os.path.join(os.path.abspath("."), relative_path)
 
 
+
+class ResponsizeDialog(QtWidgets.QDialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print('responsive dialog loaded')
+
+    def resizeEvent(self, event):
+        width, height = event.size().width(), event.size().height()
+        self.resize_callback(width, height)
+        super().resizeEvent(event)  
+
 if __name__ == "__main__":
     #mp.set_start_method('spawn',force=True)
     
@@ -44,6 +55,8 @@ if __name__ == "__main__":
     app.setWindowIcon(app_icon)
     
     
+
+
     # Create and display the splash screen
     splash_pix = QtGui.QPixmap(resource_path('img/Group.png'))
     #splash_pix = img.scaled(QtCore.QSize(634/2,468/2),QtCore.Qt.KeepAspectRatio)
@@ -62,14 +75,18 @@ if __name__ == "__main__":
         while time.time() < t + 0.01:
             app.processEvents()
 
-    #Initiate Main Dialog
-    Dialog = QtWidgets.QDialog()
-    Dialog.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowCloseButtonHint)
-    ui = Ui_Dialog()
+
+
+    # Initiate Main Dialog
     pool = mp.Pool(psutil.cpu_count())
+    Dialog = ResponsizeDialog()
+    Dialog.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowCloseButtonHint)
+    
+    ui = Ui_Dialog()
     ui.setupUi(Dialog, pool)
-    Dialog.setFixedSize(Dialog.size())
-    ui.addActionsToUI()
+    # ui.addActionsToUI()
+
+
     Dialog.show()
     splash.finish(Dialog)
     sys.exit(app.exec_())

@@ -24,22 +24,38 @@ import psutil
 from time import sleep
 import logging
 from io import StringIO
+from .responsive import UIResponsiveManager
 
+MAX_WIDTH = 765
+MAX_HEIGHT = 620
+MIN_WIDTH = 500
+MIN_HEIGHT = 500
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog, pool):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(761, 571)
+        Dialog.resize(MAX_WIDTH, MAX_HEIGHT)
+
+        # Bind resize event to update UI layout
+        Dialog.resize_callback = self.update_ui_layout
         
+        # Set size policy
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
         Dialog.setSizePolicy(sizePolicy)
-        Dialog.setMaximumSize(QtCore.QSize(764, 618))
+        Dialog.setMaximumSize(QtCore.QSize(MAX_WIDTH, MAX_HEIGHT))
+        Dialog.setMinimumSize(QtCore.QSize(MIN_WIDTH, MIN_HEIGHT))
         Dialog.setSizeIncrement(QtCore.QSize(0, 0))
         Dialog.setLayoutDirection(QtCore.Qt.LeftToRight)
         Dialog.setAutoFillBackground(False)
+
+        # Initialize responsive manager
+        self.responsive_manager = UIResponsiveManager()
+
+        
+        # === groupBox_2 Variable List ===
         self.groupBox_2 = QtWidgets.QGroupBox(Dialog)
         self.groupBox_2.setGeometry(QtCore.QRect(289, 0, 191, 396))
         self.groupBox_2.setObjectName("groupBox_2")
@@ -53,6 +69,8 @@ class Ui_Dialog(object):
         self.variableList.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.variableList.setResizeMode(QtWidgets.QListView.Fixed)
         self.variableList.setObjectName("variableList")
+
+        # === groupBox_6 Regression Variables ===
         self.groupBox_6 = QtWidgets.QGroupBox(Dialog)
         self.groupBox_6.setGeometry(QtCore.QRect(490, 0, 261, 396))
         self.groupBox_6.setObjectName("groupBox_6")
@@ -90,6 +108,8 @@ class Ui_Dialog(object):
         self.removeOffset = QtWidgets.QToolButton(self.gridLayoutWidget)
         self.removeOffset.setObjectName("removeOffset")
         self.gridLayout.addWidget(self.removeOffset, 1, 0, 1, 1)
+        
+        # === groupBox_3 Local Variables (inside groupBox_6) ===
         self.groupBox_3 = QtWidgets.QGroupBox(self.groupBox_6)
         self.groupBox_3.setGeometry(QtCore.QRect(68, 80, 181, 306))
         self.groupBox_3.setObjectName("groupBox_3")
@@ -111,6 +131,8 @@ class Ui_Dialog(object):
         self.addLocal = QtWidgets.QToolButton(self.horizontalLayoutWidget_5)
         self.addLocal.setObjectName("addLocal")
         self.horizontalLayout_5.addWidget(self.addLocal)
+
+        # === groupBox_7 GWR Mode ===
         self.groupBox_7 = QtWidgets.QGroupBox(Dialog)
         self.groupBox_7.setGeometry(QtCore.QRect(10, 200, 271, 46))
         self.groupBox_7.setObjectName("groupBox_7")
@@ -130,6 +152,8 @@ class Ui_Dialog(object):
         self.isGWRRBTN.setChecked(False)
         self.isGWRRBTN.setObjectName("isGWRRBTN")
         self.horizontalLayout_2.addWidget(self.isGWRRBTN)
+
+        # === kernelDropdownGrou ===
         self.kernelDropdownGrou = QtWidgets.QGroupBox(Dialog)
         self.kernelDropdownGrou.setGeometry(QtCore.QRect(10, 245, 271, 51))
         self.kernelDropdownGrou.setObjectName("kernelDropdownGrou")
@@ -148,6 +172,8 @@ class Ui_Dialog(object):
         self.shapeBox.setObjectName("shapeBox")
         self.shapeBox.addItem("")
         self.horizontalLayout_3.addWidget(self.shapeBox)
+
+        # === groupBox_9 Bandwidth Searching ===
         self.groupBox_9 = QtWidgets.QGroupBox(Dialog)
         self.groupBox_9.setGeometry(QtCore.QRect(10, 295, 271, 181))
         self.groupBox_9.setObjectName("groupBox_9")
@@ -194,6 +220,8 @@ class Ui_Dialog(object):
         self.label_11 = QtWidgets.QLabel(self.formLayoutWidget)
         self.label_11.setObjectName("label_11")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_11)
+
+        # === groupBox_4 Location Variables ===
         self.groupBox_4 = QtWidgets.QGroupBox(Dialog)
         self.groupBox_4.setGeometry(QtCore.QRect(10, 50, 271, 151))
         self.groupBox_4.setObjectName("groupBox_4")
@@ -260,6 +288,8 @@ class Ui_Dialog(object):
         self.removeID = QtWidgets.QToolButton(self.gridLayoutWidget_4)
         self.removeID.setObjectName("removeID")
         self.gridLayout_4.addWidget(self.removeID, 0, 3, 1, 1)
+
+        # === groupBox Data Files ===
         self.groupBox = QtWidgets.QGroupBox(Dialog)
         self.groupBox.setGeometry(QtCore.QRect(10, 0, 271, 51))
         self.groupBox.setObjectName("groupBox")
@@ -270,6 +300,8 @@ class Ui_Dialog(object):
         self.openDataPath = QtWidgets.QLineEdit(self.groupBox)
         self.openDataPath.setGeometry(QtCore.QRect(11, 21, 221, 21))
         self.openDataPath.setObjectName("openDataPath")
+
+        # === groupBox_10 Model Options ===
         self.groupBox_10 = QtWidgets.QGroupBox(Dialog)
         self.groupBox_10.setGeometry(QtCore.QRect(290, 395, 461, 81))
         self.groupBox_10.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft)
@@ -300,10 +332,8 @@ class Ui_Dialog(object):
         self.advancedBTN = QtWidgets.QToolButton(self.groupBox_10)
         self.advancedBTN.setGeometry(QtCore.QRect(400, 40, 56, 26))
         self.advancedBTN.setObjectName("advancedBTN")
-        self.runBTN = QtWidgets.QPushButton(Dialog)
-        self.runBTN.setGeometry(QtCore.QRect(615, 485, 121, 76))
-        self.runBTN.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.runBTN.setObjectName("runBTN")
+
+        # === groupBox_13 Outputs ===
         self.groupBox_13 = QtWidgets.QGroupBox(Dialog)
         self.groupBox_13.setGeometry(QtCore.QRect(10, 475, 571, 81))
         self.groupBox_13.setObjectName("groupBox_13")
@@ -333,6 +363,12 @@ class Ui_Dialog(object):
         self.label_8.setObjectName("label_8")
         self.gridLayout_2.addWidget(self.label_8, 1, 0, 1, 1)
 
+        # === runBTN ===
+        self.runBTN = QtWidgets.QPushButton(Dialog)
+        self.runBTN.setGeometry(QtCore.QRect(615, 485, 121, 76))        
+        self.runBTN.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.runBTN.setFocusPolicy(QtCore.Qt.NoFocus)
+
         self.pool = pool
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -340,18 +376,25 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "MGWR 2.2"))
+        self.groupBox.setTitle(_translate("Dialog", "Data Files"))
         self.groupBox_2.setTitle(_translate("Dialog", "Variable List"))
+        self.groupBox_3.setTitle(_translate("Dialog", "Local Variables"))
+        self.groupBox_4.setTitle(_translate("Dialog", "Location Variables"))
         self.groupBox_6.setTitle(_translate("Dialog", "Regression Variables"))
+        self.groupBox_7.setTitle(_translate("Dialog", "GWR Mode"))
+        self.groupBox_9.setTitle(_translate("Dialog", "Bandwidth Searching"))
+        self.groupBox_10.setTitle(_translate("Dialog", "Model Options"))
+        self.groupBox_11.setTitle(_translate("Dialog", "Optimization Criterion"))
+        self.groupBox_12.setTitle(_translate("Dialog", "Model Type"))
+        self.groupBox_13.setTitle(_translate("Dialog", "Outputs"))
         self.removeY.setText(_translate("Dialog", "<"))
         self.label_5.setText(_translate("Dialog", "Offset"))
         self.addY.setText(_translate("Dialog", ">"))
         self.addOffset.setText(_translate("Dialog", ">"))
         self.label_4.setText(_translate("Dialog", "Y"))
         self.removeOffset.setText(_translate("Dialog", "<"))
-        self.groupBox_3.setTitle(_translate("Dialog", "Local Variables"))
         self.removeLocal.setText(_translate("Dialog", "<"))
         self.addLocal.setText(_translate("Dialog", ">"))
-        self.groupBox_7.setTitle(_translate("Dialog", "GWR Mode"))
         self.isMGWRRBTN.setText(_translate("Dialog", "MGWR"))
         self.isGWRRBTN.setText(_translate("Dialog", "GWR"))
         self.kernelDropdownGrou.setTitle(_translate("Dialog", "Spatial Kernel"))
@@ -360,7 +403,6 @@ class Ui_Dialog(object):
         self.shapeBox.setItemText(0, _translate("Dialog", "Bisquare"))
         #self.shapeBox.setItemText(1, _translate("Dialog", "Gaussian"))
         #self.shapeBox.setItemText(2, _translate("Dialog", "Exponential"))
-        self.groupBox_9.setTitle(_translate("Dialog", "Bandwidth Searching"))
         self.bwDropdown.setItemText(0, _translate("Dialog", "Golden Section"))
         self.bwDropdown.setItemText(1, _translate("Dialog", "Interval Search"))
         self.bwDropdown.setItemText(2, _translate("Dialog", "Pre-defined bandwidth"))
@@ -368,7 +410,6 @@ class Ui_Dialog(object):
         self.label_9.setText(_translate("Dialog", "Min"))
         self.label_10.setText(_translate("Dialog", "Max"))
         self.label_11.setText(_translate("Dialog", "Interval"))
-        self.groupBox_4.setTitle(_translate("Dialog", "Location Variables"))
         self.isPrjCoorRBTN.setText(_translate("Dialog", "Projected"))
         self.isSphCoorRBTN.setText(_translate("Dialog", "Spherical"))
         self.removeYCoor.setText(_translate("Dialog", ">"))
@@ -380,23 +421,27 @@ class Ui_Dialog(object):
         self.removeXCoor.setText(_translate("Dialog", ">"))
         self.addYCoor.setText(_translate("Dialog", "<"))
         self.removeID.setText(_translate("Dialog", ">"))
-        self.groupBox.setTitle(_translate("Dialog", "Data Files"))
         self.openDataBTN.setText(_translate("Dialog", "..."))
-        self.groupBox_10.setTitle(_translate("Dialog", "Model Options"))
-        self.groupBox_11.setTitle(_translate("Dialog", "Optimization Criterion"))
         self.optimCriDropdown.setItemText(0, _translate("Dialog", "AICc"))
         self.optimCriDropdown.setItemText(1, _translate("Dialog", "AIC"))
         self.optimCriDropdown.setItemText(2, _translate("Dialog", "BIC"))
         self.optimCriDropdown.setItemText(3, _translate("Dialog", "CV"))
-        self.groupBox_12.setTitle(_translate("Dialog", "Model Type"))
         self.modelTypeDropdown.setItemText(0, _translate("Dialog", "Gaussian"))
         self.advancedBTN.setText(_translate("Dialog", "Advanced"))
         self.runBTN.setText(_translate("Dialog", "Run"))
-        self.groupBox_13.setTitle(_translate("Dialog", "Outputs"))
         self.saveBetasBTN.setText(_translate("Dialog", "..."))
         self.saveSumBTN.setText(_translate("Dialog", "..."))
         self.label_7.setText(_translate("Dialog", "Summary File"))
         self.label_8.setText(_translate("Dialog", "Parameter Estimates"))
+
+    def update_ui_layout(self, dialog_width, dialog_height):
+        params = self.responsive_manager.get_params_for_size(dialog_width, dialog_height)
+        # if params:
+        #     if 'groupBox_2' in params:
+        #         self.groupBox_2.setGeometry(*params['groupBox_2'])
+        #     if 'groupBox_6' in params:
+        #         self.groupBox_6.setGeometry(*params['groupBox_6'])
+        print(f'update_ui_layout: {dialog_width}, {dialog_height}, params: {params}')
 
     def update_label(self):
         current_time = self.elapsedTimeFormatter(self.time)
