@@ -11,11 +11,16 @@ from src.gui import Ui_Dialog
 import sys,os,time
 import multiprocessing as mp
 import psutil
+import ctypes
 
-# # enable Qt auto DPI scaling
-# os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
-# QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
-# QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(2)  # Windows 8.1+
+except Exception:
+    try:
+        ctypes.windll.user32.SetProcessDPIAware()  # Windows 7
+    except:
+        pass
+
 
 if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -40,20 +45,19 @@ if __name__ == "__main__":
     app.setStyle('mac')
 
 
+    #  calculate scale factor based on primary screen size
     screen = app.primaryScreen()
-    size = screen.size()
-    width = size.width()
-    scale_factor = width / 1920.0
+    scale_factor = screen.size().width() / 1920.0
+
+    # Set application font and scale it
     font = app.font()
+    font.setHintingPreference(QtGui.QFont.PreferFullHinting)
+    app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+    app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     font.setPointSizeF(font.pointSizeF() * scale_factor)
     app.setFont(font)
-    MAX_WIDTH_SCALED = int(765 * scale_factor)
-    MAX_HEIGHT_SCALED = int(620 * scale_factor)
-    MIN_WIDTH_SCALED = int(500 * scale_factor)
-    MIN_HEIGHT_SCALED = int(500 * scale_factor)
-    print(f"Scale factor: {scale_factor}")
-
     
+
     app_icon = QtGui.QIcon()
     app_icon.addFile(resource_path('img/MGWR16.png'), QtCore.QSize(16,16))
     app_icon.addFile(resource_path('img/MGWR24.png'), QtCore.QSize(24,24))
@@ -88,7 +92,7 @@ if __name__ == "__main__":
     ui = Ui_Dialog()
     pool = mp.Pool(psutil.cpu_count())
     ui.setupUi(Dialog, pool)
-    ui.scaleUi(Dialog, scale_factor)
+    # ui.scaleUi(Dialog, scale_factor)
     Dialog.setFixedSize(Dialog.size())
     ui.addActionsToUI()
     Dialog.show()

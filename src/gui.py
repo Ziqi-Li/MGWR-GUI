@@ -38,13 +38,9 @@ class Ui_Dialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
         Dialog.setSizePolicy(sizePolicy)
-        
-
-
         Dialog.setSizeIncrement(QtCore.QSize(0, 0))
         Dialog.setLayoutDirection(QtCore.Qt.LeftToRight)
         Dialog.setAutoFillBackground(False)
-
         self.groupBox_2 = QtWidgets.QGroupBox(Dialog)
         self.groupBox_2.setGeometry(QtCore.QRect(289, 0, 191, 396))
         self.groupBox_2.setObjectName("groupBox_2")
