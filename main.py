@@ -6,12 +6,20 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+import sys, os
+
+if not sys.stdout:
+    sys.stdout = open(os.devnull, 'w')
+if not sys.stderr:
+    sys.stderr = open(os.devnull, 'w')
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from src.gui import Ui_Dialog
 import sys,os,time
 import multiprocessing as mp
 import psutil
 import ctypes
+
 
 try:
     ctypes.windll.shcore.SetProcessDpiAwareness(2)  # Windows 8.1+
@@ -44,8 +52,21 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('mac')
 
+    
+    # Load custom font
+    font_path = os.path.join(os.path.dirname(__file__), "fonts", "arial.ttf")
+    font_id = QtGui.QFontDatabase.addApplicationFont(font_path)
+    if font_id == -1:
+        print("failed to load font:", font_path)
+    else:
+        font_families = QtGui.QFontDatabase.applicationFontFamilies(font_id)
+        if font_families:
+            font = QtGui.QFont(font_families[0])
+            font.setPointSize(10) 
+            app.setFont(font)
+            print(f"font {font_families[0]} has been loaded successfully")
 
-    #  calculate scale factor based on primary screen size
+    # Calculate scale factor based on primary screen size
     screen = app.primaryScreen()
     scale_factor = screen.size().width() / 1920.0
 
@@ -57,21 +78,6 @@ if __name__ == "__main__":
     font.setPointSizeF(font.pointSizeF() * scale_factor)
     app.setFont(font)
 
-
-    
-    font_path = os.path.join(os.path.dirname(__file__), "fonts", "arial.ttf")
-
-    font_id = QtGui.QFontDatabase.addApplicationFont(font_path)
-    if font_id == -1:
-        print("failed to load font:", font_path)
-    else:
-        font_families = QtGui.QFontDatabase.applicationFontFamilies(font_id)
-        if font_families:
-            font = QtGui.QFont(font_families[0])
-            font.setPointSize(10)  # 預設字型大小，可調整
-            app.setFont(font)
-            print(f"font {font_families[0]} has been loaded successfully")
-    
 
     app_icon = QtGui.QIcon()
     app_icon.addFile(resource_path('img/MGWR16.png'), QtCore.QSize(16,16))
@@ -107,7 +113,7 @@ if __name__ == "__main__":
     ui = Ui_Dialog()
     pool = mp.Pool(psutil.cpu_count())
     ui.setupUi(Dialog, pool)
-    # ui.scaleUi(Dialog, scale_factor)
+    ui.scaleUi(Dialog, scale_factor)
     Dialog.setFixedSize(Dialog.size())
     ui.addActionsToUI()
     Dialog.show()
