@@ -56,6 +56,21 @@ if __name__ == "__main__":
     app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     font.setPointSizeF(font.pointSizeF() * scale_factor)
     app.setFont(font)
+
+
+    
+    font_path = os.path.join(os.path.dirname(__file__), "fonts", "arial.ttf")
+
+    font_id = QtGui.QFontDatabase.addApplicationFont(font_path)
+    if font_id == -1:
+        print("failed to load font:", font_path)
+    else:
+        font_families = QtGui.QFontDatabase.applicationFontFamilies(font_id)
+        if font_families:
+            font = QtGui.QFont(font_families[0])
+            font.setPointSize(10)  # 預設字型大小，可調整
+            app.setFont(font)
+            print(f"font {font_families[0]} has been loaded successfully")
     
 
     app_icon = QtGui.QIcon()
