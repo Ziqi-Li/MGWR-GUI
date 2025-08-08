@@ -183,23 +183,33 @@ def summaryMGWR(self,diag):
         for j in range(self.k):
             summary += "%-67s %12.3f\n" % (diag.XNames[j], diag.testMCResults[j])
     
-
     summary += "\n%s\n" % ('Diagnostic Information')
     summary += '-' * 80 + '\n'
-    
-    summary += "%-67s %12.3f\n" % ('Residual sum of squares:', self.resid_ss)
-    summary += "%-67s %12.3f\n" % ('Effective number of parameters (trace(S)):', self.tr_S)
-    summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
-    summary += "%-67s %12.3f\n" % ('Sigma estimate:', np.sqrt(self.sigma2))
-    summary += "%-67s %12.3f\n" % ('Log-likelihood:', self.llf)
-    summary += "%-67s %12.3f\n" % ('Degree of Dependency (DoD):', self.DoD)
-    summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
-    summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
-    summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
-    summary += "%-67s %12.3f\n" % ('R2:', self.D2)
-    summary += "%-67s %12.3f\n" % ('Adj. R2:', self.adj_D2)
 
-    summary += "\n%s\n" % ('Summary Statistics For MGWR Parameter Estimates')
+    if isinstance(self.family, Gaussian):
+        summary += "%-67s %12.3f\n" % ('Residual sum of squares:', self.resid_ss)
+        summary += "%-67s %12.3f\n" % ('Effective number of parameters (trace(S)):', self.tr_S)
+        summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
+        summary += "%-67s %12.3f\n" % ('Sigma estimate:', np.sqrt(self.sigma2))
+        summary += "%-67s %12.3f\n" % ('Log-likelihood:', self.llf)
+        summary += "%-67s %12.3f\n" % ('Degree of Dependency (DoD):', self.DoD)
+        summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
+        summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
+        summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
+        summary += "%-67s %12.3f\n" % ('R2:', self.D2)
+        summary += "%-67s %12.3f\n" % ('Adj. R2:', self.adj_D2)
+    else:
+        summary += "%-67s %12.3f\n" % ('Effective number of parameters (trace(S)):', self.tr_S)
+        summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
+        summary += "%-67s %12.3f\n" % ('Deviance:', self.global_deviance)
+        summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
+        summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
+        summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
+        summary += "%-67s %12.3f\n" % ('Percent deviance explained:', self.D2)
+        summary += "%-67s %12.3f\n" % ('Adj. percent deviance explained:', self.adj_D2)
+
+    summary += "\n%s\n" % ('Diagnostic Information')
+        summary += "\n%s\n" % ('Summary Statistics For MGWR Parameter Estimates')
     summary += '-' * 80 + '\n'
     summary += "%-25s %10s %10s %10s %10s %10s\n" % ('Variable', 'Mean' ,'STD', 'Min' ,'Median', 'Max')
     summary += "%-25s %10s %10s %10s %10s %10s\n" % ('-'*20, '-'*10 ,'-'*10, '-'*10 ,'-'*10, '-'*10)
