@@ -67,15 +67,13 @@ class Kernel(object):
         if self.function == 'triangular':
             return 1 - zs
         elif self.function == 'uniform':
-            return np.ones(zi.shape) * 0.5
+            return np.ones(zs.shape) * 0.5
         elif self.function == 'quadratic':
             return (3. / 4) * (1 - zs**2)
         elif self.function == 'quartic':
             return (15. / 16) * (1 - zs**2)**2
         elif self.function == 'gaussian':
             return np.exp(-0.5 * (zs)**2)
-        elif self.function == 'gui-gaussian':
-            return np.exp(-0.5 * (2.45*zs)**2)
         elif self.function == 'bisquare':
             return (1 - (zs)**2)**2
         elif self.function == 'exponential':
