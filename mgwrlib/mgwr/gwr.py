@@ -1638,35 +1638,119 @@ class MGWR(GWR):
             return ENP_j, CCT, pR
         return ENP_j, CCT
 
-    def fit(self, n_chunks=1, pool=None, ini_betas=None, tol=1e-10, max_iter=200, bw_stable=3):
+    def fit(self, search_method='golden_section', criterion='AICc', 
+            bw_min=None, bw_max=None, interval=0.0, tol=1.0e-6,
+            max_iter=200, init_multi=None, tol_multi=1.0e-5,
+            rss_score=False, multi_bw_min=[None], multi_bw_max=[None], 
+            bws_same_times=5,  max_iter_multi=200,
+            ini_betas=None, tol_lsa=1e-10, max_iter_lsa=200, bw_lsa_stable=3,
+            verbose=False, pool=None, n_chunks=1):
         """
         Compute MGWR inference by chunk to reduce memory footprint.
         
         Parameters
         ----------
 
-        n_chunks      : integer, optional
-                        A number of chunks parameter to reduce memory usage. 
-                        e.g. n_chunks=2 should reduce overall memory usage by 2.
-        pool          : A multiprocessing Pool object to enable parallel fitting; default is None.
-
-        ini_betas     : np.ndarray, optional
-                        Initial values for LSA (Poisson/Binomial).
-        tol           : float
-                        Convergence in LSA.
-        max_iter      : integer
-                        Max iterations for LSA.
-        bw_stable     : integer
-                        Iterations stopped after same bandwithds produeced
+        search_method  : string
+                         bw search method: 'golden', 'interval'
+        criterion      : string
+                         bw selection criterion: 'AICc', 'AIC', 'BIC', 'CV'
+        bw_min         : float
+                         min value used in bandwidth search
+        bw_max         : float
+                         max value used in bandwidth search
+        interval       : float
+                         interval increment used in interval search
+        tol            : float
+                         tolerance used to determine convergence
+        max_iter       : integer
+                         max iterations if no convergence to tol
+        init_multi     : float
+                         None (default) to initialize MGWR with a bandwidth
+                         derived from GWR. Otherwise this option will choose the
+                         bandwidth to initialize MGWR with.
+        tol_multi      : convergence tolerence for the multiple bandwidth
+                         backfitting algorithm; a larger tolerance may stop the
+                         algorith faster though it may result in a less optimal
+                         model
+        rss_score      : True to use the residual sum of sqaures to evaluate
+                         each iteration of the multiple bandwidth backfitting
+                         routine and False to use a smooth function; default is
+                         False
+        multi_bw_min   : list 
+                         min values used for each covariate in mgwr bandwidth search.
+                         Must be either a single value or have one value for
+                         each covariate including the intercept
+        multi_bw_max   : list
+                         max values used for each covariate in mgwr bandwidth
+                         search. Must be either a single value or have one value
+                         for each covariate including the intercept
+        bws_same_times : If bandwidths keep the same between iterations for
+                         bws_same_times (default 5) in backfitting, then use the
+                         current set of bandwidths as final bandwidths.
+        max_iter_multi : max iterations if no convergence to tol for multiple
+                         bandwidth backfitting algorithm
+        ini_betas      : np.ndarray, optional
+                         Initial values for LSA (Poisson/Binomial).
+        tol_lsa        : float
+                         Convergence in LSA.
+        max_iter_lsa   : integer
+                         Max iterations for LSA.
+        bw_lsa_stable  : integer
+                         If bandwidths keep the same between iterations for
+                         bw_lsa_stable (default 3) in backfitting, then use the
+                         current set of bandwidths as final bandwidths for LSA.
+        verbose        : Boolean
+                         If true, bandwidth searching history is printed out; default is False.
+        pool           : None, deprecated and not used.
+        n_chunks       : integer, optional
+                         A number of chunks parameter to reduce memory usage. 
+                         e.g. n_chunks=2 should reduce overall memory usage by 2.
         Returns
         -------
                       : MGWRResults
         """
         y = self.y
         x = self.X
+        self.X_loc = x
+        X_glob = []
         offset = self.offset
         coords = self.coords
         family = self.family
+
+        if search_method=='interval':
+          init_multi=42 + interval
+        else:
+          init_multi=init_multi
+
+        if bw_min==None:
+          bw_min=multi_bw_min[0]
+        
+        if bw_max==None:
+          bw_max=multi_bw_max[0]
+
+        k = self.X.shape[1]
+        if len(multi_bw_min) == k:
+            multi_bw_min = multi_bw_min
+        elif len(multi_bw_min) == 1:
+            multi_bw_min = multi_bw_min * k
+        else:
+            raise AttributeError(
+                "multi_bw_min must be either a list containing"
+                " a single entry or a list containing an entry for each of k")
+
+        if len(multi_bw_max) == k:
+            multi_bw_max = multi_bw_max
+        elif len(multi_bw_max) == 1:
+            multi_bw_max = multi_bw_max * k
+        else:
+            raise AttributeError(
+                "multi_bw_max must be either a list containing"
+                " a single entry or a list containing an entry for each of k"
+                " covariates including the intercept")
+
+        if pool:
+            warnings.warn("The pool parameter is no longer used and will have no effect; parallelization is default and implemented using joblib instead.", RuntimeWarning, stacklevel=2)
 
         if isinstance(self.family, Gaussian):
             params = self.selector.params
@@ -1678,15 +1762,9 @@ class MGWR(GWR):
                 def tqdm(x, total=0,
                          desc=''):  #otherwise, just passthrough the range
                     return x
-    
-            if pool:
-                self.n_chunks = pool._processes * n_chunks
-                rslt = tqdm(
-                    pool.imap(self._chunk_compute_R, range(self.n_chunks)),
-                    total=self.n_chunks, desc='Inference')
-            else:
-                self.n_chunks = n_chunks
-                rslt = map(self._chunk_compute_R,
+
+            self.n_chunks = n_chunks
+            rslt = map(self._chunk_compute_R,
                            tqdm(range(self.n_chunks), desc='Inference'))
     
             rslt_list = list(zip(*rslt))
@@ -1710,8 +1788,8 @@ class MGWR(GWR):
             n = y.shape[0]
             w = None
             y_raw = y
-            bw_no_change = 0
-            bw_history = []
+            bw_lsa_no_change = 0
+            bw_lsa_history = []
     
             if ini_betas is None:
                 betas = np.zeros(x.shape, np.float64)
@@ -1723,7 +1801,7 @@ class MGWR(GWR):
             v = self.family.predict(y_off)
             mu = self.family.starting_mu(y)
     
-            while diff > tol and n_iter < max_iter:
+            while diff > tol_lsa and n_iter < max_iter_lsa:
                 n_iter += 1
                 w = self.family.weights(mu)
                 z = v + (self.family.link.deriv(mu) * (y - mu))
@@ -1734,7 +1812,23 @@ class MGWR(GWR):
                 
                 sel = Sel_BW(coords, wz, wx, constant=False, multi=True,
                              raw_y=y_raw, raw_x=x, offset=offset, ext_w=w, family=family)
-                bws_guass_wxz = sel.search()
+
+                bws_guass_wxz = sel.search(search_method=search_method,
+                                          criterion=criterion,
+                                          bw_min=bw_min,
+                                          bw_max=bw_max,
+                                          interval=interval,
+                                          tol=tol,
+                                          max_iter=max_iter_multi,
+                                          init_multi=init_multi,
+                                          tol_multi=tol_multi,
+                                          rss_score=rss_score,
+                                          max_iter_multi=max_iter_multi,
+                                          multi_bw_min=multi_bw_min,
+                                          multi_bw_max=multi_bw_max,
+                                          bws_same_times=bws_same_times,
+                                          verbose=verbose,
+                                          pool=None)
                 print(bws_guass_wxz)
 
                 temp_model = MGWR(coords, wz, wx, selector=sel,
@@ -1743,14 +1837,14 @@ class MGWR(GWR):
                 
                 n_betas = sel.params
 
-                if len(bw_history) > 0 and  np.allclose(bws_guass_wxz, bw_history[-1]):
-                  bw_no_change += 1
+                if len(bw_lsa_history) > 0 and  np.allclose(bws_guass_wxz, bw_lsa_history[-1]):
+                  bw_lsa_no_change += 1
                 else:
-                  bw_no_change = 0
-                bw_history.append(np.array(bws_guass_wxz))
+                  bw_lsa_no_change = 0
+                bw_lsa_history.append(np.array(bws_guass_wxz))
 
-                if bw_no_change >= (bw_stable - 1):
-                  print(f"Calibration stopped as the bandwidths remain the same for {bw_stable} iterations.")
+                if bw_lsa_no_change >= (bw_lsa_stable - 1):
+                  print(f"Calibration stopped as the bandwidths remain the same for {bw_lsa_stable} LSA iterations.")
                   break
 
                 v = np.sum(sel.params * x,axis=1).reshape(-1, 1)
@@ -1772,8 +1866,8 @@ class MGWR(GWR):
                 
                 print(f"LSA iteration {n_iter}: Difference = {diff:.5f}")
             
-            if n_iter >= max_iter:
-              print(f"Warning: Maximum iterations reached without convergence")
+            if n_iter >= max_iter_lsa:
+              print(f"Warning: LSA: Maximum iterations reached without convergence")
             
             print(f"Final bandwidths: {bws_guass_wxz}")
     
@@ -2263,6 +2357,7 @@ class MGWRResults(GWRResults):
 
 
         """
+
         temp_sel = copy.deepcopy(selector)
 
         if seed is None:
