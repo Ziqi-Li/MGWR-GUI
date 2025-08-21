@@ -1533,56 +1533,42 @@ class MGWR(GWR):
     def __init__(self, coords, y, X, selector, family=Gaussian(), offset=None,
                  sigma2_v1=True, kernel='bisquare', fixed=False, constant=True,
                  spherical=False, hat_matrix=False, name_x=None, n_jobs=1):
-      self.family = family 
+      """
+      Initialize class
+      """
+      self.family = family
+
       if isinstance(self.family, Gaussian):
-        """
-        Initialize class
-        """
-        self.y = y
         self.selector = selector
         self.bws = selector.bw[0]  #final set of bandwidth
         self.bws_history = selector.bw[1]   #bws history in backfitting
         self.bw_init = selector.bw_init  #initialization bandwidth
-        if offset is None:
-            self.offset = np.ones((len(y), 1))
-        else:
-            self.offset = offset * 1.0
-        GWR.__init__(self, coords, y, X, self.bw_init, family=self.family,
-                     sigma2_v1=sigma2_v1, kernel=kernel, fixed=fixed,
-                     constant=constant, spherical=spherical,
-                     hat_matrix=hat_matrix)
-        self.sigma2_v1 = sigma2_v1
-        self.points = None
-        self.P = None
-        self.exog_resid = None
-        self.exog_scale = None
-        self.fit_params = None
-        self.n_jobs = n_jobs
-        self.name_x = name_x
 
       elif isinstance(self.family, (Poisson, Binomial)):
         self.coords = np.array(coords)
-        self.y = y
         self.selector = None
         self.bws = None
         self.bws_history = None
         self.bw_init = None
-        if offset is None:
-            self.offset = np.ones((len(y), 1))
-        else:
-            self.offset = offset * 1.0
-        GWR.__init__(self, coords, y, X, self.bw_init, family=self.family,
-                     sigma2_v1=sigma2_v1, kernel=kernel, fixed=fixed,
-                     constant=constant, spherical=spherical,
-                     hat_matrix=hat_matrix)
-        self.sigma2_v1 = sigma2_v1
-        self.points = None
-        self.P = None
-        self.exog_resid = None
-        self.exog_scale = None
-        self.fit_params = None
-        self.n_jobs = n_jobs
-        self.name_x = name_x
+
+      GWR.__init__(self, coords, y, X, self.bw_init, family=self.family,
+                   sigma2_v1=sigma2_v1, kernel=kernel, fixed=fixed,
+                   constant=constant, spherical=spherical,
+                   hat_matrix=hat_matrix)
+      self.y = y 
+      self.sigma2_v1 = sigma2_v1
+      self.points = None
+      self.P = None
+      self.exog_resid = None
+      self.exog_scale = None
+      self.fit_params = None
+      self.n_jobs = n_jobs
+      self.name_x = name_x
+      
+      if offset is None:
+        self.offset = np.ones((len(y), 1))
+      else:
+        self.offset = offset * 1.0
 
     def _chunk_compute_R(self, chunk_id=0):
         """
@@ -1772,12 +1758,14 @@ class MGWR(GWR):
             CCT = np.sum(np.array(rslt_list[1]), axis=0)
     
             w = np.ones(self.n)
+
             if self.hat_matrix:
                 R = np.hstack(rslt_list[2])
             else:
                 R = None
-            return MGWRResults(self, params, predy, CCT, ENP_j, w, R)
-            
+
+            return MGWRResults(self, params, predy, CCT, ENP_j, w, R, self.name_x)
+
         elif isinstance(self.family, (Poisson, Binomial)):
             from .sel_bw import Sel_BW
 
@@ -1878,9 +1866,8 @@ class MGWR(GWR):
 
             final_model.selector = sel
             final_model.bws = np.array(bws_guass_wxz)
-            final_model.name_x = self.name_x
 
-            return MGWRResults(final_model, betas, mu, mgwr_rslt.raw_CCT, mgwr_rslt.ENP_j, w, mgwr_rslt.R, final_model.name_x)
+            return MGWRResults(final_model, betas, mu, mgwr_rslt.raw_CCT, mgwr_rslt.ENP_j, w, mgwr_rslt.R, self.name_x)
     
         else:
             raise NotImplementedError('N/A')
