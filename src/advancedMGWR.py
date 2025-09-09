@@ -139,7 +139,7 @@ class Ui_advMGWRDialog(object):
         '''
     
     def loadSettings(self):
-        
+
         if self.locollinear == "Off":
             self.locollinearComboBox.setCurrentIndex(0)
         else:

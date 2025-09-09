@@ -6,7 +6,7 @@ from .diagnostics import get_AICc
 def summaryAbout(self):
     summary = '=' * 80 + '\n'
     summary += 'MGWR Version: 3.0.0\n'
-    summary += 'Released on: 07/01/2025\n'
+    summary += 'Released on: 09/01/2025\n'
     summary += 'The Spatial Data Science Center (SDSC)\n'
     summary += 'Florida State University, Tallahassee, Florida, USA\n'
     return summary
@@ -26,6 +26,7 @@ def summaryModel(self,diag):
         summary += "%-65s %14s\n" % ('Variable standardization:', diag.GWRVarSTD)
 
     summary += "%-50s %29s\n\n" % ('Total runtime:', str(diag.end_t - diag.begin_t).split('.', 2)[0])
+
     return summary
 
 def summaryGLM(self,diag):
@@ -157,7 +158,7 @@ def summaryMGWR(self,diag):
 
     #summary += "%-65s %14s\n" % ('Multiple comparison correction:', diag.mcc)
 
-    summary += "%-59s %20d\n\n" % ('Number of iterations used:', diag.selector.bw[1].shape[0])
+    #summary += "%-59s %20d\n\n" % ('Number of iterations used:', diag.selector.bw[1].shape[0])
 
     summary += "%s\n" %('MGWR bandwidths')
     summary += '-' * 80 + '\n'
@@ -183,21 +184,30 @@ def summaryMGWR(self,diag):
         for j in range(self.k):
             summary += "%-67s %12.3f\n" % (diag.XNames[j], diag.testMCResults[j])
     
-
     summary += "\n%s\n" % ('Diagnostic Information')
     summary += '-' * 80 + '\n'
-    
-    summary += "%-67s %12.3f\n" % ('Residual sum of squares:', self.resid_ss)
-    summary += "%-67s %12.3f\n" % ('Effective number of parameters (trace(S)):', self.tr_S)
-    summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
-    summary += "%-67s %12.3f\n" % ('Sigma estimate:', np.sqrt(self.sigma2))
-    summary += "%-67s %12.3f\n" % ('Log-likelihood:', self.llf)
-    summary += "%-67s %12.3f\n" % ('Degree of Dependency (DoD):', self.DoD)
-    summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
-    summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
-    summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
-    summary += "%-67s %12.3f\n" % ('R2:', self.D2)
-    summary += "%-67s %12.3f\n" % ('Adj. R2:', self.adj_D2)
+
+    if isinstance(self.family, Gaussian):
+        summary += "%-67s %12.3f\n" % ('Residual sum of squares:', self.resid_ss)
+        summary += "%-67s %12.3f\n" % ('Effective number of parameters (trace(S)):', self.tr_S)
+        summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
+        summary += "%-67s %12.3f\n" % ('Sigma estimate:', np.sqrt(self.sigma2))
+        summary += "%-67s %12.3f\n" % ('Log-likelihood:', self.llf)
+        summary += "%-67s %12.3f\n" % ('Degree of Dependency (DoD):', self.DoD)
+        summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
+        summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
+        summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
+        summary += "%-67s %12.3f\n" % ('R2:', self.D2)
+        summary += "%-67s %12.3f\n" % ('Adj. R2:', self.adj_D2)
+    else:
+        summary += "%-67s %12.3f\n" % ('Effective number of parameters (trace(S)):', self.tr_S)
+        summary += "%-67s %12.3f\n" % ('Degree of freedom (n - trace(S)):', self.df_model)
+        summary += "%-67s %12.3f\n" % ('Deviance:', self.global_deviance)
+        summary += "%-67s %12.3f\n" % ('AIC:', self.aic)
+        summary += "%-67s %12.3f\n" % ('AICc:', self.aicc)
+        summary += "%-67s %12.3f\n" % ('BIC:', self.bic)
+        summary += "%-67s %12.3f\n" % ('Percent deviance explained:', self.D2)
+        summary += "%-67s %12.3f\n" % ('Adj. percent deviance explained:', self.adj_D2)
 
     summary += "\n%s\n" % ('Summary Statistics For MGWR Parameter Estimates')
     summary += '-' * 80 + '\n'
@@ -219,15 +229,13 @@ def summaryCitation(self):
     summary = 'Suggested Citations:\n'
     summary += '- Fotheringham, A. S., Oshan, T. M., & Li, Z. (2023). Multiscale geographically weighted regression: Theory and practice. CRC Press.\n'
     summary += '- Fotheringham, A. S., Yang, W., & Kang, W. (2017). Multiscale geographically weighted regression (MGWR). Annals of the American Association of Geographers, 107(6), 1247-1265.\n'
-    summary += '- Fotheringham, A. S., Kao, C. L., Yu, H., Bardin, S., Oshan, T., Li, Z., ... & Luo, W. (2024). Exploring spatial context: a comprehensive bibliography of GWR and MGWR. arXiv preprint arXiv:2404.16209.\n'
-
     summary += '=' * 80 + '\n'
     return summary
 
 def summaryTeam(self):
     summary = 'Development Team:\n'
     summary += 'Ziqi Li, Mehak Sachdeva, Chen-Lun Kao, Jiajun Chang, and Stewart Fotheringham\n'
-    summary += 'Contributors:\n'
+    summary += 'Past Contributors:\n'
     summary += 'Taylor Oshan, Wei Kang, Hanchen Yu, Sarah Bardin, and Levi Wolf\n'
     summary += '=' * 80 + '\n'
     return summary

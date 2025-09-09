@@ -66,10 +66,10 @@ class TestGWRGaussian(unittest.TestCase):
         BIC = get_BIC(rslt)
         CV = get_CV(rslt)
 
-        self.assertAlmostEquals(np.floor(AICc), 894.0)
-        self.assertAlmostEquals(np.floor(AIC), 890.0)
-        self.assertAlmostEquals(np.floor(BIC), 944.0)
-        self.assertAlmostEquals(np.round(CV, 2), 18.25)
+        self.assertAlmostEqual(np.floor(AICc), 894.0)
+        self.assertAlmostEqual(np.floor(AIC), 890.0)
+        self.assertAlmostEqual(np.floor(BIC), 944.0)
+        self.assertAlmostEqual(np.round(CV, 2), 18.25)
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-04)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-04)
         np.testing.assert_allclose(t_Int, rslt.tvalues[:, 0], rtol=1e-04)
@@ -135,12 +135,12 @@ class TestGWRGaussian(unittest.TestCase):
         np.testing.assert_allclose(
             adj_alpha, np.array([0.02034978, 0.01017489, 0.0002035]),
             rtol=1e-04)
-        self.assertAlmostEquals(critical_t, 2.6011011542649394)
-        self.assertAlmostEquals(np.around(R2, 4), 0.5924)
-        self.assertAlmostEquals(np.floor(AICc), 896.0)
-        self.assertAlmostEquals(np.floor(AIC), 892.0)
-        self.assertAlmostEquals(np.floor(BIC), 941.0)
-        self.assertAlmostEquals(np.around(CV, 2), 19.19)
+        self.assertAlmostEqual(critical_t, 2.6011011542649394)
+        self.assertAlmostEqual(np.around(R2, 4), 0.5924)
+        self.assertAlmostEqual(np.floor(AICc), 896.0)
+        self.assertAlmostEqual(np.floor(AIC), 892.0)
+        self.assertAlmostEqual(np.floor(BIC), 941.0)
+        self.assertAlmostEqual(np.around(CV, 2), 19.19)
         np.testing.assert_allclose(corr1, corr2, rtol=1e-04)
         np.testing.assert_allclose(vif1, vif2, rtol=1e-04)
         np.testing.assert_allclose(cn1, cn2, rtol=1e-04)
@@ -202,10 +202,10 @@ class TestGWRGaussian(unittest.TestCase):
         BIC = get_BIC(rslt)
         CV = get_CV(rslt)
 
-        self.assertAlmostEquals(np.floor(AICc), 895.0)
-        self.assertAlmostEquals(np.floor(AIC), 890.0)
-        self.assertAlmostEquals(np.floor(BIC), 943.0)
-        self.assertAlmostEquals(np.around(CV, 2), 18.21)
+        self.assertAlmostEqual(np.floor(AICc), 895.0)
+        self.assertAlmostEqual(np.floor(AIC), 890.0)
+        self.assertAlmostEqual(np.floor(BIC), 943.0)
+        self.assertAlmostEqual(np.around(CV, 2), 18.21)
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-04)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-04)
         np.testing.assert_allclose(t_Int, rslt.tvalues[:, 0], rtol=1e-04)
@@ -254,10 +254,10 @@ class TestGWRGaussian(unittest.TestCase):
         BIC = get_BIC(rslt)
         CV = get_CV(rslt)
 
-        self.assertAlmostEquals(np.floor(AICc), 896.0)
-        self.assertAlmostEquals(np.floor(AIC), 894.0)
-        self.assertAlmostEquals(np.floor(BIC), 922.0)
-        self.assertAlmostEquals(np.around(CV, 2), 17.91)
+        self.assertAlmostEqual(np.floor(AICc), 896.0)
+        self.assertAlmostEqual(np.floor(AIC), 894.0)
+        self.assertAlmostEqual(np.floor(BIC), 922.0)
+        self.assertAlmostEqual(np.around(CV, 2), 17.91)
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-04)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-04)
         np.testing.assert_allclose(t_Int, rslt.tvalues[:, 0], rtol=1e-04)
@@ -464,11 +464,11 @@ class TestGWRGaussian(unittest.TestCase):
         CV = get_CV(rslt)
         R2 = rslt.R2
 
-        self.assertAlmostEquals(np.around(R2, 4), 0.5921)
-        self.assertAlmostEquals(np.floor(AICc), 896.0)
-        self.assertAlmostEquals(np.floor(AIC), 892.0)
-        self.assertAlmostEquals(np.floor(BIC), 941.0)
-        self.assertAlmostEquals(np.around(CV, 2), 19.11)
+        self.assertAlmostEqual(np.around(R2, 4), 0.5921)
+        self.assertAlmostEqual(np.floor(AICc), 896.0)
+        self.assertAlmostEqual(np.floor(AIC), 892.0)
+        self.assertAlmostEqual(np.floor(BIC), 941.0)
+        self.assertAlmostEqual(np.around(CV, 2), 19.11)
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-04)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-04)
         np.testing.assert_allclose(t_Int, rslt.tvalues[:, 0], rtol=1e-04)
@@ -493,7 +493,7 @@ class TestGWRPoisson(unittest.TestCase):
     def setUp(self):
         data_path = os.path.join(
             os.path.dirname(__file__), 'tokyo/Tokyomortality.csv')
-        data = io.open(data_path, mode='Ur')
+        data = io.open(data_path, mode='r')
         self.coords = list(
             zip(data.by_col('X_CENTROID'), data.by_col('Y_CENTROID')))
         self.y = np.array(data.by_col('db2564')).reshape((-1, 1))
@@ -548,9 +548,9 @@ class TestGWRPoisson(unittest.TestCase):
         AIC = get_AIC(rslt)
         BIC = get_BIC(rslt)
 
-        self.assertAlmostEquals(np.floor(AICc), 13294.0)
-        self.assertAlmostEquals(np.floor(AIC), 13247.0)
-        self.assertAlmostEquals(np.floor(BIC), 13485.0)
+        self.assertAlmostEqual(np.floor(AICc), 13294.0)
+        self.assertAlmostEqual(np.floor(AIC), 13247.0)
+        self.assertAlmostEqual(np.floor(BIC), 13485.0)
 
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-05)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-03)
@@ -598,10 +598,10 @@ class TestGWRPoisson(unittest.TestCase):
         BIC = get_BIC(rslt)
         D2 = rslt.D2
 
-        self.assertAlmostEquals(np.floor(AICc), 13285)
-        self.assertAlmostEquals(np.floor(AIC), 13259.0)
-        self.assertAlmostEquals(np.floor(BIC), 13442.0)
-        self.assertAlmostEquals(np.round(D2, 3), 0.747)
+        self.assertAlmostEqual(np.floor(AICc), 13285)
+        self.assertAlmostEqual(np.floor(AIC), 13259.0)
+        self.assertAlmostEqual(np.floor(BIC), 13442.0)
+        self.assertAlmostEqual(np.round(D2, 3), 0.747)
 
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-04)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-02)
@@ -650,10 +650,10 @@ class TestGWRPoisson(unittest.TestCase):
         BIC = get_BIC(rslt)
         D2 = rslt.D2
 
-        self.assertAlmostEquals(np.floor(AICc), 367.0)
-        self.assertAlmostEquals(np.floor(AIC), 361.0)
-        self.assertAlmostEquals(np.floor(BIC), 451.0)
-        self.assertAlmostEquals(np.round(D2, 3), 0.676)
+        self.assertAlmostEqual(np.floor(AICc), 367.0)
+        self.assertAlmostEqual(np.floor(AIC), 361.0)
+        self.assertAlmostEqual(np.floor(BIC), 451.0)
+        self.assertAlmostEqual(np.round(D2, 3), 0.676)
 
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-02,
                                    atol=1e-02)
@@ -715,9 +715,9 @@ class TestGWRPoisson(unittest.TestCase):
         AIC = get_AIC(rslt)
         BIC = get_BIC(rslt)
 
-        self.assertAlmostEquals(np.floor(AICc), 11283.0)
-        self.assertAlmostEquals(np.floor(AIC), 11211.0)
-        self.assertAlmostEquals(np.floor(BIC), 11497.0)
+        self.assertAlmostEqual(np.floor(AICc), 11283.0)
+        self.assertAlmostEqual(np.floor(AIC), 11211.0)
+        self.assertAlmostEqual(np.floor(BIC), 11497.0)
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-03)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-02)
         np.testing.assert_allclose(t_Int, rslt.tvalues[:, 0], rtol=1e-02)
@@ -763,9 +763,9 @@ class TestGWRPoisson(unittest.TestCase):
         AIC = get_AIC(rslt)
         BIC = get_BIC(rslt)
 
-        self.assertAlmostEquals(np.floor(AICc), 21070.0)
-        self.assertAlmostEquals(np.floor(AIC), 21069.0)
-        self.assertAlmostEquals(np.floor(BIC), 21111.0)
+        self.assertAlmostEqual(np.floor(AICc), 21070.0)
+        self.assertAlmostEqual(np.floor(AIC), 21069.0)
+        self.assertAlmostEqual(np.floor(BIC), 21111.0)
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-04)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-02)
         np.testing.assert_allclose(t_Int, rslt.tvalues[:, 0], rtol=1e-02)
@@ -850,9 +850,9 @@ class TestGWRBinomial(unittest.TestCase):
         AIC = get_AIC(rslt)
         BIC = get_BIC(rslt)
 
-        self.assertAlmostEquals(np.floor(AICc), 275.0)
-        self.assertAlmostEquals(np.floor(AIC), 271.0)
-        self.assertAlmostEquals(np.floor(BIC), 349.0)
+        self.assertAlmostEqual(np.floor(AICc), 275.0)
+        self.assertAlmostEqual(np.floor(AIC), 271.0)
+        self.assertAlmostEqual(np.floor(BIC), 349.0)
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-00)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-00)
         np.testing.assert_allclose(t_Int, rslt.tvalues[:, 0], rtol=1e-00)
@@ -914,10 +914,10 @@ class TestGWRBinomial(unittest.TestCase):
         BIC = get_BIC(rslt)
         D2 = rslt.D2
 
-        self.assertAlmostEquals(np.floor(AICc), 277.0)
-        self.assertAlmostEquals(np.floor(AIC), 271.0)
-        self.assertAlmostEquals(np.floor(BIC), 358.0)
-        self.assertAlmostEquals(np.round(D2, 3), 0.319)
+        self.assertAlmostEqual(np.floor(AICc), 277.0)
+        self.assertAlmostEqual(np.floor(AIC), 271.0)
+        self.assertAlmostEqual(np.floor(BIC), 358.0)
+        self.assertAlmostEqual(np.round(D2, 3), 0.319)
 
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-00)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-00)
@@ -980,9 +980,9 @@ class TestGWRBinomial(unittest.TestCase):
         AIC = get_AIC(rslt)
         BIC = get_BIC(rslt)
 
-        self.assertAlmostEquals(np.floor(AICc), 276.0)
-        self.assertAlmostEquals(np.floor(AIC), 272.0)
-        self.assertAlmostEquals(np.floor(BIC), 341.0)
+        self.assertAlmostEqual(np.floor(AICc), 276.0)
+        self.assertAlmostEqual(np.floor(AIC), 272.0)
+        self.assertAlmostEqual(np.floor(BIC), 341.0)
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-00)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-00)
         np.testing.assert_allclose(t_Int, rslt.tvalues[:, 0], rtol=1e-00)
@@ -1043,9 +1043,9 @@ class TestGWRBinomial(unittest.TestCase):
         AIC = get_AIC(rslt)
         BIC = get_BIC(rslt)
 
-        self.assertAlmostEquals(np.floor(AICc), 276.0)
-        self.assertAlmostEquals(np.floor(AIC), 273.0)
-        self.assertAlmostEquals(np.floor(BIC), 331.0)
+        self.assertAlmostEqual(np.floor(AICc), 276.0)
+        self.assertAlmostEqual(np.floor(AIC), 273.0)
+        self.assertAlmostEqual(np.floor(BIC), 331.0)
         np.testing.assert_allclose(est_Int, rslt.params[:, 0], rtol=1e-00)
         np.testing.assert_allclose(se_Int, rslt.bse[:, 0], rtol=1e-00)
         np.testing.assert_allclose(t_Int, rslt.tvalues[:, 0], rtol=1e-00)

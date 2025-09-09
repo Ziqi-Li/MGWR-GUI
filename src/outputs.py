@@ -29,7 +29,7 @@ def outputMGWR(self):
 def saveSummaryGWR(self):
     summary = summaryAbout(self) + summaryModel(
         self.results, self) + summaryGLM(self.results, self) + summaryGWR(
-            self.results, self) + summaryACK(self) + summaryTeam(self) + summaryCitation(self)
+            self.results, self) +  summaryTeam(self)# + summaryCitation(self)
     with open(self.sumFileSavePath.text(), "w") as text_file:
         print(summary, file=text_file)
 
@@ -37,7 +37,7 @@ def saveSummaryGWR(self):
 def saveSummaryMGWR(self):
     summary = summaryAbout(self) + summaryModel(
         self.results, self) + summaryGLM(self.results, self) + summaryMGWR(
-            self.results, self) + summaryACK(self) + summaryTeam(self) + summaryCitation(self)
+            self.results, self) +  summaryTeam(self) #+ summaryCitation(self)
     with open(self.sumFileSavePath.text(), "w") as text_file:
         print(summary, file=text_file)
 
@@ -62,16 +62,30 @@ def saveProcessToCSVMGWR(self):
 def saveBetasToCSVMGWR(self):
 
     sig_mask = (self.results.filter_tvals() != 0).astype(int)
-    resultsDF = pd.DataFrame(
-        np.column_stack(
-            (self.id, self.xCoor, self.yCoor, self.y, self.glm_rslt.resid_response, self.results.predy,
-             self.results.resid_response, self.results.localR2,self.results.params,
-             self.results.bse, self.results.tvalues, sig_mask, self.results.sumW)))
-    resultsDF.columns = [self.idName] + [
-        'x_coor', 'y_coor', 'y', 'ols_residual','mgwr_yhat', 'mgwr_residual','localR2'
-    ] + ['beta_' + x for x in self.XNames] + [
-        'se_' + x for x in self.XNames
-    ] + ['t_' + x for x in self.XNames] + ['sig_mask_' + x for x in self.XNames] + ['sumW_' + x for x in self.XNames]
+
+    if isinstance(self.family, Gaussian):
+        resultsDF = pd.DataFrame(
+            np.column_stack(
+                (self.id, self.xCoor, self.yCoor, self.y, self.glm_rslt.resid_response, self.results.predy,
+                self.results.resid_response, self.results.localR2,self.results.params,
+                self.results.bse, self.results.tvalues, sig_mask, self.results.sumW)))
+        resultsDF.columns = [self.idName] + [
+            'x_coor', 'y_coor', 'y', 'ols_residual','mgwr_yhat', 'mgwr_residual','localR2'
+        ] + ['beta_' + x for x in self.XNames] + [
+            'se_' + x for x in self.XNames
+        ] + ['t_' + x for x in self.XNames] + ['sig_mask_' + x for x in self.XNames] + ['sumW_' + x for x in self.XNames]
+
+    else:
+        resultsDF = pd.DataFrame(
+            np.column_stack(
+                (self.id, self.xCoor, self.yCoor, self.y, self.glm_rslt.resid_response, self.results.predy,
+                self.results.resid_response, self.results.params,
+                self.results.bse, self.results.tvalues, sig_mask, self.results.sumW)))
+        resultsDF.columns = [self.idName] + [
+            'x_coor', 'y_coor', 'y', 'ols_residual','mgwr_yhat', 'mgwr_residual',
+        ] + ['beta_' + x for x in self.XNames] + [
+            'se_' + x for x in self.XNames
+        ] + ['t_' + x for x in self.XNames] + ['sig_mask_' + x for x in self.XNames] + ['sumW_' + x for x in self.XNames]
 
     if self.locollinear != "Off":
         old_columns = resultsDF.columns
