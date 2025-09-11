@@ -27,6 +27,7 @@ def get_AICc(gwr):
         #aicc = n*np.log(sigma2) + n*np.log(2.0*np.pi) + n*(n+k)/(n-k-2.0)
     elif isinstance(gwr.family, (Poisson, Binomial)):
         aicc = get_AIC(gwr) + 2.0 * k * (k + 1.0) / (n - k - 1.0)
+    
     return aicc
 
 

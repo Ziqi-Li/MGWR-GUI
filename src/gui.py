@@ -25,6 +25,7 @@ import psutil
 from time import sleep
 import logging
 from io import StringIO
+from tkinter.simpledialog import Dialog
 
 WIDTH = 765
 HEIGHT = 570
@@ -38,6 +39,7 @@ class Ui_Dialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
         Dialog.setSizePolicy(sizePolicy)
+        #Dialog.setMaximumSize(QtCore.QSize(764, 618))
         Dialog.setSizeIncrement(QtCore.QSize(0, 0))
         Dialog.setLayoutDirection(QtCore.Qt.LeftToRight)
         Dialog.setAutoFillBackground(False)
@@ -337,6 +339,248 @@ class Ui_Dialog(object):
         self.pool = pool
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+
+
+    def scaleUi(self, Dialog, scale_factor):
+        """
+        Scale the UI elements based on the provided scale factor.
+        """
+
+        Dialog.resize(
+            int(WIDTH * scale_factor), 
+            int(HEIGHT * scale_factor)
+        )
+
+
+        self.groupBox.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(0 * scale_factor),
+            int(271 * scale_factor),
+            int(51 * scale_factor)
+            )
+        )
+        self.groupBox_2.setGeometry(
+            QtCore.QRect(
+            int(289 * scale_factor),
+            int(0 * scale_factor),
+            int(191 * scale_factor),
+            int(396 * scale_factor)
+            )
+        )
+        self.groupBox_3.setGeometry(
+            QtCore.QRect(
+            int(68 * scale_factor),
+            int(80 * scale_factor),
+            int(181 * scale_factor),
+            int(306 * scale_factor)
+            )
+        )
+        self.groupBox_4.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(50 * scale_factor),
+            int(271 * scale_factor),
+            int(151 * scale_factor)
+            )
+        )
+        self.groupBox_6.setGeometry(
+            QtCore.QRect(
+            int(490 * scale_factor),
+            int(0 * scale_factor),
+            int(261 * scale_factor),
+            int(396 * scale_factor)
+            )
+        )
+        self.groupBox_7.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(200 * scale_factor),
+            int(271 * scale_factor),
+            int(46 * scale_factor)
+            )
+        )
+        self.groupBox_9.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(295 * scale_factor),
+            int(271 * scale_factor),
+            int(181 * scale_factor)
+            )
+        )
+        self.groupBox_10.setGeometry(
+            QtCore.QRect(
+            int(290 * scale_factor),
+            int(395 * scale_factor),
+            int(461 * scale_factor),
+            int(81 * scale_factor)
+            )
+        )
+        self.groupBox_13.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(475 * scale_factor),
+            int(571 * scale_factor),
+            int(81 * scale_factor)
+            )
+        )
+
+        self.gridLayoutWidget.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(241 * scale_factor),
+            int(61 * scale_factor)
+            )
+        )
+        self.gridLayoutWidget_2.setGeometry(
+            QtCore.QRect(
+            int(9 * scale_factor),
+            int(20 * scale_factor),
+            int(551 * scale_factor),
+            int(54 * scale_factor)
+            )
+        )
+        self.gridLayoutWidget_4.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(256 * scale_factor),
+            int(101 * scale_factor)
+            )
+        )
+        self.gridLayoutWidget_5.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(381 * scale_factor),
+            int(51 * scale_factor)
+            )
+        )
+
+        self.variableList.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(25 * scale_factor),
+            int(171 * scale_factor),
+            int(361 * scale_factor)
+            )
+        )
+        self.localList.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(25 * scale_factor),
+            int(161 * scale_factor),
+            int(271 * scale_factor)
+            )
+        )
+        self.horizontalLayoutWidget_5.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(225 * scale_factor),
+            int(56 * scale_factor),
+            int(31 * scale_factor)
+            )
+        )
+        self.horizontalLayoutWidget_2.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(256 * scale_factor),
+            int(18 * scale_factor)
+            )
+        )
+        self.kernelDropdownGrou.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(245 * scale_factor),
+            int(271 * scale_factor),
+            int(51 * scale_factor)
+            )
+        )
+        self.horizontalLayoutWidget_3.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(256 * scale_factor),
+            int(31 * scale_factor)
+            )
+        )
+        self.bwDropdown.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(256 * scale_factor),
+            int(26 * scale_factor)
+            )
+        )
+        self.formLayoutWidget.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(50 * scale_factor),
+            int(236 * scale_factor),
+            int(126 * scale_factor)
+            )
+        )
+        self.horizontalLayoutWidget.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(125 * scale_factor),
+            int(256 * scale_factor),
+            int(21 * scale_factor)
+            )
+        )
+        self.openDataBTN.setGeometry(
+            QtCore.QRect(
+            int(240 * scale_factor),
+            int(20 * scale_factor),
+            int(26 * scale_factor),
+            int(21 * scale_factor)
+            )
+        )
+        self.openDataPath.setGeometry(
+            QtCore.QRect(
+            int(11 * scale_factor),
+            int(21 * scale_factor),
+            int(221 * scale_factor),
+            int(21 * scale_factor)
+            )
+        )
+        self.optimCriDropdown.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(161 * scale_factor),
+            int(26 * scale_factor)
+            )
+        )
+        self.modelTypeDropdown.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(161 * scale_factor),
+            int(26 * scale_factor)
+            )
+        )
+        self.advancedBTN.setGeometry(
+            QtCore.QRect(
+            int(400 * scale_factor),
+            int(40 * scale_factor),
+            int(56 * scale_factor),
+            int(26 * scale_factor)
+            )
+        )
+        self.runBTN.setGeometry(
+            QtCore.QRect(
+            int(615 * scale_factor),
+            int(485 * scale_factor),
+            int(121 * scale_factor),
+            int(76 * scale_factor)
+            )
+        )
+
+
     
     def scaleUi(self, Dialog, scale_factor):
         """
@@ -578,7 +822,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "MGWR 2.2"))
+        Dialog.setWindowTitle(_translate("Dialog", "MGWR 3.0"))
         self.groupBox_2.setTitle(_translate("Dialog", "Variable List"))
         self.groupBox_6.setTitle(_translate("Dialog", "Regression Variables"))
         self.removeY.setText(_translate("Dialog", "<"))
@@ -887,10 +1131,12 @@ class Ui_Dialog(object):
         elif index == 1:
             self.deGreyOutLineEdit(self.bwInterval)
             self.deGreyOutLineEdit(self.bwMin)
+            self.bwMin.setPlaceholderText("")
             self.deGreyOutLineEdit(self.bwMax)
         #defined
         elif index == 2 and self.isGWR:
             self.deGreyOutLineEdit(self.bwPreDefined)
+            self.bwMin.setPlaceholderText("")
 
     def modelChanged(self, index):
         #Gaussian
@@ -943,7 +1189,7 @@ class Ui_Dialog(object):
         
         self.bwDropdown.clear()
         self.bwDropdown.addItem("Golden Section")
-        self.bwDropdown.addItem("Interval Search")
+        #self.bwDropdown.addItem("Interval Search")
 
         self.isMGWR = True
         self.isGWR = False
@@ -1096,10 +1342,11 @@ class Ui_Dialog(object):
                 self.family = Poisson()
                 if self.OffsetLabel.text() != '':
                     self.offset = self.data[[self.OffsetLabel.text()
-                                             ]].as_matrix().reshape(-1, 1)
+                                             ]].values.reshape(-1, 1)
             elif self.modelTypeDropdown.currentText() == "Binomial":
                 self.family = Binomial()
 
+            
             #MGWR Advanced Settings
             self.MGWRVarSTD = self.advMGWRUI.varSTD
             self.GWRVarSTD = self.advGWRUI.varSTD
@@ -1107,14 +1354,19 @@ class Ui_Dialog(object):
             if self.MGWRVarSTD == 'On' and self.isMGWR:
                 self.X = (self.X - np.mean(self.X, axis=0)) / np.std(
                     self.X, axis=0)
-                self.y = (self.y - np.mean(self.y, axis=0)) / np.std(
-                    self.y, axis=0)
+
+                
+                if isinstance(self.family, Gaussian):
+                    self.y = (self.y - np.mean(self.y, axis=0)) / np.std(
+                        self.y, axis=0)
 
             if self.GWRVarSTD == 'On' and self.isGWR:
                 self.X = (self.X - np.mean(self.X, axis=0)) / np.std(
                     self.X, axis=0)
-                self.y = (self.y - np.mean(self.y, axis=0)) / np.std(
-                    self.y, axis=0)
+                
+                if isinstance(self.family, Gaussian):
+                    self.y = (self.y - np.mean(self.y, axis=0)) / np.std(
+                        self.y, axis=0)
 
             self.SOC = self.advMGWRUI.soc
             self.initBeta = self.advMGWRUI.init
@@ -1296,77 +1548,131 @@ class Ui_Dialog(object):
                 self.end_t = datetime.now()
                 outputGWR(self)
 
+
+
+
             if self.isMGWR:
                 print("MGWR running...")
-                print("Backfitting...")
-                self.selector = Sel_BW(
-                    self.coords,
-                    self.y,
-                    self.X,
-                    fixed=self.fixed,
-                    kernel=self.kernel,
-                    multi=True,
-                    constant=self.constant,
-                    spherical=self.coorType)
+
+                if isinstance(self.family, Gaussian):
+                    print("Backfitting...")
+                    self.selector = Sel_BW(
+                        self.coords,
+                        self.y,
+                        self.X,
+                        fixed=self.fixed,
+                        kernel=self.kernel,
+                        multi=True,
+                        constant=self.constant,
+                        spherical=self.coorType)
                     
-                if self.search == 'golden_section':
-                    if self.bwMin.text():
+                    #Gaussian-golden search
+                    if self.search == 'golden_section':
+                        if self.bwMin.text():
+                            min = int(float(self.bwMin.text()))
+                        else:
+                            min = None
+                        self.bws = self.selector.search(
+                            search_method='golden_section',
+                            criterion=self.criterion,
+                            rss_score=self.rss_score,
+                            tol_multi=self.tol_multi,
+                            init_multi=self.init_multi_bw,
+                            multi_bw_min = [min],
+                            pool=self.pool,
+                            verbose=True)
+                        self.init_multi_bw = self.selector.bw_init
+                    
+                    #Gaussian-Interval search
+                    elif self.search == 'interval':
                         min = int(float(self.bwMin.text()))
-                    else:
-                        min = None
-                    self.bws = self.selector.search(
-                        search_method='golden_section',
-                        criterion=self.criterion,
-                        rss_score=self.rss_score,
-                        tol_multi=self.tol_multi,
-                        init_multi=self.init_multi_bw,
-                        multi_bw_min = [min],
-                        pool=self.pool,
-                        verbose=True)
-                    self.init_multi_bw = self.selector.bw_init
-                
-                elif self.search == 'interval':
-                    min = int(float(self.bwMin.text()))
-                    max = int(float(self.bwMax.text()))
-                    step = int(float(self.bwInterval.text()))
-                    if not self.init_multi_bw:
-                        self.init_multi_bw = Sel_BW(
-                                                self.coords,
-                                                self.y,
-                                                self.X,
-                                                kernel=self.kernel,
-                                                fixed=self.fixed,
+                        max = int(float(self.bwMax.text()))
+                        step = int(float(self.bwInterval.text()))
+                        if not self.init_multi_bw:
+                            self.init_multi_bw = Sel_BW(
+                                                    self.coords,
+                                                    self.y,
+                                                    self.X,
+                                                    kernel=self.kernel,
+                                                    fixed=self.fixed,
+                                                    family=self.family,
+                                                    offset=self.offset,
+                                                    constant=self.constant,
+                                                    spherical=self.coorType).search(
+                                                        search_method="interval",interval=step,
+                                                        bw_min=min,bw_max=max)
+                        self.bws = self.selector.search(
+                            search_method='interval',
+                            criterion=self.criterion,
+                            rss_score=self.rss_score,
+                            tol_multi=self.tol_multi,
+                            multi_bw_min = [min],
+                            multi_bw_max = [max],
+                            interval = step,
+                            init_multi=self.init_multi_bw,
+                            pool=self.pool,
+                            verbose=True)
+                    
+                    print("Computing inference...")
+                    suggested_n_chunks = int(np.ceil(1.5 * (self.selector.X_loc.shape[0])**2*8*self.selector.X_loc.shape[1]/psutil.virtual_memory().available))
+                    #print("suggested_n_chunks:",suggested_n_chunks)
+
+                    self.results = MGWR(
+                        self.coords,
+                        self.y,
+                        self.X,
+                        selector=self.selector,
+                        kernel=self.kernel,
+                        fixed=self.fixed,
+                        constant=self.constant,
+                        spherical=self.coorType).fit(
+                            n_chunks=suggested_n_chunks, pool=self.pool)
+
+
+            
+
+                elif isinstance(self.family, (Poisson, Binomial)):
+                    
+                    if self.search == 'golden_section':
+                        if self.bwMin.text():
+                            min = int(float(self.bwMin.text()))
+                        else:
+                            min = None
+                        self.results = MGWR(self.coords, self.y, self.X, 
+                                                selector=None, 
+                                                constant=self.constant, 
                                                 family=self.family,
-                                                offset=self.offset,
-                                                constant=self.constant,
-                                                spherical=self.coorType).search(
-                                                    search_method="interval",interval=step,
-                                                    bw_min=min,bw_max=max)
-                    self.bws = self.selector.search(
-                        search_method='interval',
-                        criterion=self.criterion,
-                        rss_score=self.rss_score,
-                        tol_multi=self.tol_multi,
-                        multi_bw_min = [min],
-                        multi_bw_max = [max],
-                        interval = step,
-                        init_multi=self.init_multi_bw,
-                        pool=self.pool,
-                        verbose=True)
+                                                kernel=self.kernel,
+                                                fixed=self.fixed, 
+                                                offset=self.offset, 
+                                                spherical=self.coorType).fit(pool=self.pool,
+                                                                             bw_stable=3)
+                        
+                    elif self.search == 'interval':
+                        min = int(float(self.bwMin.text()))
+                        max = int(float(self.bwMax.text()))
+                        step = int(float(self.bwInterval.text()))
+                        self.results = MGWR(self.coords, self.y, self.X, 
+                                                selector=None, 
+                                                constant=self.constant, 
+                                                family=self.family,
+                                                kernel=self.kernel,
+                                                fixed=self.fixed, 
+                                                offset=self.offset, 
+                                                spherical=self.coorType).fit(search_method="interval",
+                                                                             criterion=self.criterion,
+                                                                             rss_score=self.rss_score,
+                                                                             tol_multi=self.tol_multi,
+                                                                             multi_bw_min = [min],
+                                                                             multi_bw_max = [max],
+                                                                             interval = step,
+                                                                             pool=self.pool,
+                                                                             bw_lsa_stable=3)
+                    
+                else:
+                    raise ValueError("Unsupported family")
+
                 
-                print("Computing inference...")
-                suggested_n_chunks = int(np.ceil(1.5 * (self.selector.X_loc.shape[0])**2*8*self.selector.X_loc.shape[1]/psutil.virtual_memory().available))
-                print("suggested_n_chunks:",suggested_n_chunks)
-                self.results = MGWR(
-                    self.coords,
-                    self.y,
-                    self.X,
-                    self.selector,
-                    kernel=self.kernel,
-                    fixed=self.fixed,
-                    constant=self.constant,
-                    spherical=self.coorType).fit(
-                        n_chunks=suggested_n_chunks, pool=self.pool)
 
                 if self.mcTest != "Off":
                     print("Starting spatial variability test...")

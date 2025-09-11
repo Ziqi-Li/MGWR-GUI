@@ -1,7 +1,5 @@
 #Main GWR classes
 
-__author__ = "Taylor Oshan Tayoshan@gmail.com"
-
 import copy
 import numpy as np
 import numpy.linalg as la
@@ -10,11 +8,13 @@ from scipy.special import factorial
 from itertools import combinations as combo
 from spglm.family import Gaussian, Binomial, Poisson
 from spglm.glm import GLM, GLMResults
-from spglm.iwls import iwls, _compute_betas_gwr
+from .iwls import iwls, _compute_betas_gwr
 from spglm.utils import cache_readonly
+from spreg.utils import spdot, spmultiply
 from .diagnostics import get_AIC, get_AICc, get_BIC, corr
 from .kernels import *
 from .summary import *
+#from .sel_bw import Sel_BW
 import multiprocessing as mp
 
 
@@ -206,7 +206,7 @@ class GWR(GLM):
 
     def __init__(self, coords, y, X, bw, family=Gaussian(), offset=None,
                  sigma2_v1=True, kernel='bisquare', fixed=False, constant=True,
-                 spherical=False, hat_matrix=False):
+                 spherical=False, hat_matrix=False, ext_w=None):
         """
         Initialize class
         """
@@ -230,6 +230,7 @@ class GWR(GLM):
         self.spherical = spherical
         self.hat_matrix = hat_matrix
         self.m = np.unique(self.coords, axis=0).shape[0]
+        self.ext_w = ext_w
 
     def _build_wi(self, i, bw):
 
@@ -258,7 +259,7 @@ class GWR(GLM):
         elif isinstance(self.family, (Poisson, Binomial)):
             rslt = iwls(self.y, self.X, self.family, self.offset, None,
                         self.fit_params['ini_params'], self.fit_params['tol'],
-                        self.fit_params['max_iter'], wi=wi)
+                        self.fit_params['max_iter'], wi=wi, ext_w=self.ext_w)
             inv_xtx_xt = rslt[5]
             w = rslt[3][i][0]
             influ = np.dot(self.X[i], inv_xtx_xt[:, i]) * w
@@ -1480,29 +1481,47 @@ class MGWR(GWR):
 
     """
 
-    def __init__(self, coords, y, X, selector, sigma2_v1=True,
+    def __init__(self, coords, y, X, selector, family=Gaussian(), offset=None, sigma2_v1=True,
                  kernel='bisquare', fixed=False, constant=True,
                  spherical=False, hat_matrix=False):
         """
         Initialize class
         """
+
         self.selector = selector
-        self.bws = self.selector.bw[0]  #final set of bandwidth
-        self.bws_history = selector.bw[1]  #bws history in backfitting
-        self.bw_init = self.selector.bw_init  #initialization bandwidth
-        self.family = Gaussian()  # manually set since we only support Gassian MGWR for now
-        GWR.__init__(self, coords, y, X, self.bw_init, family=self.family,
+
+        if isinstance(family, (Gaussian)):
+            self.bws = self.selector.bw[0]  #final set of bandwidth
+            self.bws_history = selector.bw[1]  #bws history in backfitting
+            self.bw_init = self.selector.bw_init  #initialization bandwidth
+        
+        elif isinstance(family, (Poisson, Binomial)):
+            self.bws = None
+            self.bws_history = None
+            self.bw_init = None
+
+        if offset is None:
+            self.offset = np.ones((len(y), 1))
+        else:
+            self.offset = offset * 1.0
+
+        
+        GWR.__init__(self, coords, y, X, self.bw_init, family=family,
                      sigma2_v1=sigma2_v1, kernel=kernel, fixed=fixed,
                      constant=constant, spherical=spherical,
                      hat_matrix=hat_matrix)
-        self.selector = selector
+        
+        self.y = y
+        self.coords = np.array(coords)
         self.sigma2_v1 = sigma2_v1
         self.points = None
         self.P = None
-        self.offset = None
         self.exog_resid = None
         self.exog_scale = None
         self_fit_params = None
+
+
+
 
     def _chunk_compute_R(self, chunk_id=0):
         """
@@ -1559,7 +1578,7 @@ class MGWR(GWR):
             return ENP_j, CCT, pR
         return ENP_j, CCT
 
-    def fit(self, n_chunks=1, pool=None):
+    def fit(self, n_chunks=1, pool=None, ini_betas=None, tol=1e-10, max_iter=200, bw_stable=5):
         """
         Compute MGWR inference by chunk to reduce memory footprint.
         
@@ -1575,8 +1594,12 @@ class MGWR(GWR):
         -------
                       : MGWRResults
         """
-        params = self.selector.params
-        predy = np.sum(self.X * params, axis=1).reshape(-1, 1)
+
+        y = self.y
+        x = self.X
+        offset = self.offset
+        coords = self.coords
+        family = self.family
 
         try:
             from tqdm.autonotebook import tqdm  #progress bar
@@ -1585,27 +1608,118 @@ class MGWR(GWR):
             def tqdm(x, total=0,
                      desc=''):  #otherwise, just passthrough the range
                 return x
+        
+        
+        if isinstance(self.family, Gaussian):
+            params = self.selector.params
+            predy = np.sum(self.X * params, axis=1).reshape(-1, 1)
+            if pool:
+                self.n_chunks = pool._processes * n_chunks
+                rslt = tqdm(
+                    pool.imap(self._chunk_compute_R, range(self.n_chunks)),
+                    total=self.n_chunks, desc='Inference')
+            else:
+                self.n_chunks = n_chunks
+                rslt = map(self._chunk_compute_R,
+                           tqdm(range(self.n_chunks), desc='Inference'))
 
-        if pool:
-            self.n_chunks = pool._processes * n_chunks
-            rslt = tqdm(
-                pool.imap(self._chunk_compute_R, range(self.n_chunks)),
-                total=self.n_chunks, desc='Inference')
-        else:
-            self.n_chunks = n_chunks
-            rslt = map(self._chunk_compute_R,
-                       tqdm(range(self.n_chunks), desc='Inference'))
+            rslt_list = list(zip(*rslt))
+            ENP_j = np.sum(np.array(rslt_list[0]), axis=0)
+            CCT = np.sum(np.array(rslt_list[1]), axis=0)
 
-        rslt_list = list(zip(*rslt))
-        ENP_j = np.sum(np.array(rslt_list[0]), axis=0)
-        CCT = np.sum(np.array(rslt_list[1]), axis=0)
+            w = np.ones(self.n)
+            if self.hat_matrix:
+                R = np.hstack(rslt_list[2])
+            else:
+                R = None
+            return MGWRResults(self, params, predy, CCT, ENP_j, w, R)
 
-        w = np.ones(self.n)
-        if self.hat_matrix:
-            R = np.hstack(rslt_list[2])
-        else:
-            R = None
-        return MGWRResults(self, params, predy, CCT, ENP_j, w, R)
+        # LSA for Poisson and Binomial MGWR   
+        elif isinstance(self.family, (Poisson, Binomial)):
+            from .sel_bw import Sel_BW
+
+            n_iter = 0
+            diff = 1.0e6
+            n = y.shape[0]
+            w = None
+            y_raw = y
+            bw_no_change = 0
+            bw_history = []
+    
+            if ini_betas is None:
+                betas = np.zeros(x.shape, np.float64)
+            else:
+                betas = ini_betas
+            
+            y_off = y / offset
+            y_off = self.family.starting_mu(y_off)
+            v = self.family.predict(y_off)
+            mu = self.family.starting_mu(y)
+            print("Starting LSA iterations...")
+            while diff > tol and n_iter < max_iter:
+                n_iter += 1
+                w = self.family.weights(mu)
+                z = v + (self.family.link.deriv(mu) * (y - mu))
+                w = np.sqrt(w)
+                
+                wx = spmultiply(x, w, array_out=False)
+                wz = spmultiply(z, w, array_out=False)
+                
+                sel = Sel_BW(coords, wz, wx, constant=False, multi=True,
+                             raw_y=y_raw, raw_x=x, offset=offset, ext_w=w, family=family)
+                bws_guass_wxz = sel.search()
+                print("Bandwidths:", ', '.join([str(bw) for bw in bws_guass_wxz]))
+
+                temp_model = MGWR(coords, wz, wx, selector=sel,
+                                  constant=False, hat_matrix=True,
+                                  family=Gaussian(), offset=offset)
+                
+                n_betas = sel.params
+
+                if len(bw_history) > 0 and  np.allclose(bws_guass_wxz, bw_history[-1]):
+                  bw_no_change += 1
+                else:
+                  bw_no_change = 0
+                bw_history.append(np.array(bws_guass_wxz))
+
+                if bw_no_change >= (bw_stable - 1):
+                  #print(f"Calibration stopped as the bandwidths remain the same for {bw_stable} iterations.")
+                  break
+
+                v = np.sum(sel.params * x,axis=1).reshape(-1, 1)
+    
+                mu = family.fitted(v)
+                
+                if isinstance(self.family, Poisson):
+                  mu = mu * offset
+                    
+                if np.sum(n_betas**2) == 0:
+                   diff = 0  
+                else:
+                  num = np.sum((n_betas - betas)**2) / n
+                  den = np.sum(np.sum(n_betas, axis=1)**2)
+                  diff = np.sqrt(num / den)
+                    
+                betas = n_betas
+                y_raw = mu.reshape(-1, 1)
+                
+                print(f"LSA iteration {n_iter}: Difference = {diff:.5f}")
+            
+            if n_iter >= max_iter:
+              print(f"Warning: Maximum iterations reached without convergence")
+            
+            #print(f"Final bandwidths: {bws_guass_wxz}")
+    
+            mgwr_rslt = temp_model.fit()
+            
+            final_model = MGWR(coords, y, x, selector=sel, constant=False,
+                               hat_matrix=True, family=family, offset=offset)
+
+            final_model.selector = sel
+            final_model.bws = np.array(bws_guass_wxz)
+
+            return MGWRResults(final_model, betas, mu, mgwr_rslt.raw_CCT, mgwr_rslt.ENP_j, w, mgwr_rslt.R)
+    
 
     def predict(self):
         '''
@@ -1785,6 +1899,7 @@ class MGWRResults(GWRResults):
         """
         self.ENP_j = ENP_j
         self.R = R
+        self.raw_CCT = CCT
         GWRResults.__init__(self, model, params, predy, None, CCT, None, w)
         if model.hat_matrix:
             self.S = np.sum(self.R, axis=2)

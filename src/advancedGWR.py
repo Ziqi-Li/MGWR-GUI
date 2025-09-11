@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from spglm.family import Gaussian, Binomial, Poisson
 class Ui_advGWRDialog(object):
     def setupUi(self, advDialog):
         advDialog.setObjectName("advDialog")
@@ -102,9 +102,9 @@ class Ui_advGWRDialog(object):
         self.mccComboBox.setItemText(3, _translate("advDialog", "FDR"))
         '''
 
-    
+
     def loadSettings(self):
-        
+
         if self.locollinear == "Off":
             self.locollinearComboBox.setCurrentIndex(0)
         else:
