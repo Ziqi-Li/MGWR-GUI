@@ -1123,10 +1123,10 @@ class Ui_Dialog(object):
         self.greyOutLineEdit(self.bwMin)
 
         if index == 0:
-            self.deGreyOutLineEdit(self.bwMin)
-            self.bwMin.setPlaceholderText("(optional)")
+            #self.deGreyOutLineEdit(self.bwMin)
+            #self.bwMin.setPlaceholderText("(optional)")
             #self.bwMin.setToolTip("If not provided, the default value will be 0.1")
-            
+            pass
         #interval
         elif index == 1:
             self.deGreyOutLineEdit(self.bwInterval)
@@ -1490,15 +1490,10 @@ class Ui_Dialog(object):
                     constant=self.constant,
                     spherical=self.coorType)
                 if self.search == 'golden_section':
-                    if self.bwMin.text():
-                        min = int(float(self.bwMin.text()))
-                    else:
-                        min = None
 
                     print("Golden section search minimizing", self.criterion)
                     self.bw = self.selector.search(
                         search_method='golden_section',
-                        bw_min=min,
                         criterion=self.criterion,
                         pool=self.pool,
                         verbose=True)
@@ -1568,17 +1563,12 @@ class Ui_Dialog(object):
                     
                     #Gaussian-golden search
                     if self.search == 'golden_section':
-                        if self.bwMin.text():
-                            min = int(float(self.bwMin.text()))
-                        else:
-                            min = None
                         self.bws = self.selector.search(
                             search_method='golden_section',
                             criterion=self.criterion,
                             rss_score=self.rss_score,
                             tol_multi=self.tol_multi,
                             init_multi=self.init_multi_bw,
-                            multi_bw_min = [min],
                             pool=self.pool,
                             verbose=True)
                         self.init_multi_bw = self.selector.bw_init
