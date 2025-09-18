@@ -19,7 +19,7 @@ class Ui_summaryDlg(object):
         summaryDlg.setLayout(grid)
         font = QtGui.QFont()
         font.setFamily("Courier New")
-        font.setPointSize(12)
+        font.setPointSize(10)
         summaryDlg.setFont(font)
         
         self.summaryEdit = QtWidgets.QTextEdit()
