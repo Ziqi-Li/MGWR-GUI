@@ -19,5 +19,5 @@ conda env export > environment.yml
 ### Remember to activate the conda env to run the command
 
 ```bash
-pyinstaller build.spec
+pyinstaller --clean --noconfirm build.spec
 ```
