@@ -4,6 +4,7 @@
 
 
 import os,sys
+from tkinter.simpledialog import Dialog
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import numpy as np
@@ -26,8 +27,8 @@ import logging
 from io import StringIO
 from tkinter.simpledialog import Dialog
 
-WIDTH = 761
-HEIGHT = 571
+WIDTH = 765
+HEIGHT = 570
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog, pool):
@@ -587,6 +588,244 @@ class Ui_Dialog(object):
 
 
     
+    def scaleUi(self, Dialog, scale_factor):
+        """
+        Scale the UI elements based on the provided scale factor.
+        """
+
+        Dialog.resize(
+            int(WIDTH * scale_factor), 
+            int(HEIGHT * scale_factor)
+        )
+
+
+        self.groupBox.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(0 * scale_factor),
+            int(271 * scale_factor),
+            int(51 * scale_factor)
+            )
+        )
+        self.groupBox_2.setGeometry(
+            QtCore.QRect(
+            int(289 * scale_factor),
+            int(0 * scale_factor),
+            int(191 * scale_factor),
+            int(396 * scale_factor)
+            )
+        )
+        self.groupBox_3.setGeometry(
+            QtCore.QRect(
+            int(68 * scale_factor),
+            int(80 * scale_factor),
+            int(181 * scale_factor),
+            int(306 * scale_factor)
+            )
+        )
+        self.groupBox_4.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(50 * scale_factor),
+            int(271 * scale_factor),
+            int(151 * scale_factor)
+            )
+        )
+        self.groupBox_6.setGeometry(
+            QtCore.QRect(
+            int(490 * scale_factor),
+            int(0 * scale_factor),
+            int(261 * scale_factor),
+            int(396 * scale_factor)
+            )
+        )
+        self.groupBox_7.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(200 * scale_factor),
+            int(271 * scale_factor),
+            int(46 * scale_factor)
+            )
+        )
+        self.groupBox_9.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(295 * scale_factor),
+            int(271 * scale_factor),
+            int(181 * scale_factor)
+            )
+        )
+        self.groupBox_10.setGeometry(
+            QtCore.QRect(
+            int(290 * scale_factor),
+            int(395 * scale_factor),
+            int(461 * scale_factor),
+            int(81 * scale_factor)
+            )
+        )
+        self.groupBox_13.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(475 * scale_factor),
+            int(571 * scale_factor),
+            int(81 * scale_factor)
+            )
+        )
+
+        self.gridLayoutWidget.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(241 * scale_factor),
+            int(61 * scale_factor)
+            )
+        )
+        self.gridLayoutWidget_2.setGeometry(
+            QtCore.QRect(
+            int(9 * scale_factor),
+            int(20 * scale_factor),
+            int(551 * scale_factor),
+            int(54 * scale_factor)
+            )
+        )
+        self.gridLayoutWidget_4.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(256 * scale_factor),
+            int(101 * scale_factor)
+            )
+        )
+        self.gridLayoutWidget_5.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(381 * scale_factor),
+            int(51 * scale_factor)
+            )
+        )
+
+        self.variableList.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(25 * scale_factor),
+            int(171 * scale_factor),
+            int(361 * scale_factor)
+            )
+        )
+        self.localList.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(25 * scale_factor),
+            int(161 * scale_factor),
+            int(271 * scale_factor)
+            )
+        )
+        self.horizontalLayoutWidget_5.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(225 * scale_factor),
+            int(56 * scale_factor),
+            int(31 * scale_factor)
+            )
+        )
+        self.horizontalLayoutWidget_2.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(256 * scale_factor),
+            int(18 * scale_factor)
+            )
+        )
+        self.kernelDropdownGrou.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(245 * scale_factor),
+            int(271 * scale_factor),
+            int(51 * scale_factor)
+            )
+        )
+        self.horizontalLayoutWidget_3.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(256 * scale_factor),
+            int(31 * scale_factor)
+            )
+        )
+        self.bwDropdown.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(256 * scale_factor),
+            int(26 * scale_factor)
+            )
+        )
+        self.formLayoutWidget.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(50 * scale_factor),
+            int(236 * scale_factor),
+            int(126 * scale_factor)
+            )
+        )
+        self.horizontalLayoutWidget.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(125 * scale_factor),
+            int(256 * scale_factor),
+            int(21 * scale_factor)
+            )
+        )
+        self.openDataBTN.setGeometry(
+            QtCore.QRect(
+            int(240 * scale_factor),
+            int(20 * scale_factor),
+            int(26 * scale_factor),
+            int(21 * scale_factor)
+            )
+        )
+        self.openDataPath.setGeometry(
+            QtCore.QRect(
+            int(11 * scale_factor),
+            int(21 * scale_factor),
+            int(221 * scale_factor),
+            int(21 * scale_factor)
+            )
+        )
+        self.optimCriDropdown.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(161 * scale_factor),
+            int(26 * scale_factor)
+            )
+        )
+        self.modelTypeDropdown.setGeometry(
+            QtCore.QRect(
+            int(10 * scale_factor),
+            int(20 * scale_factor),
+            int(161 * scale_factor),
+            int(26 * scale_factor)
+            )
+        )
+        self.advancedBTN.setGeometry(
+            QtCore.QRect(
+            int(400 * scale_factor),
+            int(40 * scale_factor),
+            int(56 * scale_factor),
+            int(26 * scale_factor)
+            )
+        )
+        self.runBTN.setGeometry(
+            QtCore.QRect(
+            int(615 * scale_factor),
+            int(485 * scale_factor),
+            int(121 * scale_factor),
+            int(76 * scale_factor)
+            )
+        )
+
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "MGWR 3.0"))
