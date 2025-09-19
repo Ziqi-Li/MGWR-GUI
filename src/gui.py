@@ -302,7 +302,13 @@ class Ui_Dialog(object):
         self.gridLayout_5.addWidget(self.groupBox_12, 0, 1, 1, 1)
         self.advancedBTN = QtWidgets.QToolButton(self.groupBox_10)
         self.advancedBTN.setGeometry(QtCore.QRect(400, 40, 56, 26))
+        
+        self.advancedBTN.setMinimumSize(QtCore.QSize(60, 30))
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        self.advancedBTN.setFont(font)
         self.advancedBTN.setObjectName("advancedBTN")
+        
         self.runBTN = QtWidgets.QPushButton(Dialog)
         self.runBTN.setGeometry(QtCore.QRect(615, 485, 121, 76))
         self.runBTN.setFocusPolicy(QtCore.Qt.NoFocus)
